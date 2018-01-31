@@ -77,6 +77,17 @@
 * [Word Break](./java/)
 
 ## level 6 Linked List & Array
+* [Insert into a Cyclic Sorted List](./java/)
+* [Merge Two Sorted Lists](./java/)
+* [Subarray Sum](./java/)
+* [Maximum Subarray](./java/)
+* [Subarray Sum Closest](./java/)
+* [Copy List with Random Pointer](./java/)
+* [Linked List Cycle](./java/)
+* [Sort List](./java/)
+* [Reverse Nodes in k-Group](./java/)
+* [Median of two Sorted Arrays](./java/)
+* [Intersection of Two Arrays II](./java/)
 
 ## level 7 Two Pointers
 
