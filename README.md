@@ -57,13 +57,13 @@
 * [Build Post Office II](./java/)
 
 ## level 5 Depth First Search
-* [Palindrome Partitioning](./java/)
-* [Combination Sum](./java/)
-* [Combination Sum II](./java/)
+* [Palindrome Partitioning](./java/palindromePartitioning.java)
+* [Combination Sum](./java/combinationSum.java)
+* [Combination Sum II](./java/combinationSum2.java)
 * [ Subsets II](./java/subsets2.java)
 * [Permutations](./java/permutations.java)
-* [Permutations II](./java/)
-* [Word Ladder II](./java/)
+* [Permutations II](./java/permutations2.java)
+* [Word Ladder II](./java/wordLadder2.java)
 * [Word Ladder](./java/)
 * [Next Permutation](./java/)
 * [Next Permutation II](./java/)
