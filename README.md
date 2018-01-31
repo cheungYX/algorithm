@@ -86,9 +86,9 @@
 
 
 # Leet Code
-* [#1. Tow Sum](./java/TwoSum.java) [ruby](./ruby/two_sum.rb)
+* [#1. Tow Sum](./java/TwoSum.java) [&&ruby](./ruby/two_sum.rb)
 * [#2. Add Two Numbers](./java/addTwoNumbers.java)
-* [#21. Merge Two Sorted Lists](./java/mergeTwoSortedLists.java) [ruby](./ruby/merge_two_sorted_lists.rb)
+* [#21. Merge Two Sorted Lists](./java/mergeTwoSortedLists.java) [&&ruby](./ruby/merge_two_sorted_lists.rb)
 
 # Algorithm
 ## Binary Search
