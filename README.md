@@ -1,6 +1,6 @@
 # Ladder
 ## level 1
-* [strStr](/java/strStr.java)
+* [strStr](./java/strStr.java)
 
 ## level 2 Binary Search
 * [Closest Number in Sorted Array]()
