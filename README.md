@@ -45,8 +45,8 @@
 * [Palindrome Partitioning]()
 * [Combination Sum]()
 * [Combination Sum II]()
-* [ Subsets II]()
-* [Permutations]()
+* [ Subsets II](./java/subsets2.java)
+* [Permutations](./java/permutations.java)
 * [Permutations II]()
 * [Word Ladder II]()
 
