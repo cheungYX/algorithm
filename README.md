@@ -1,3 +1,29 @@
+# Ladder
+## level 1
+* [strStr]()
+
+## level 2 Binary Search
+* [Closest Number in Sorted Array]()
+* [Last Position of Target]()
+* [Search a 2D Matrix]()
+
+## level 3 Binary Tree & Divide Coquer
+* [Subtree with Maximum Average]()
+
+## level 4 Breadth First Search
+* [Number of Islands]()
+
+
+## level 5 Depth First Search
+* [Palindrome Partitioning]
+
+## level 6 Linked List & Array
+
+## level 7 Two Pointers
+
+## level 8 Data Structure
+
+## level 9 Dynamic Programming
 
 # Algorithm
 ## Binary Search
