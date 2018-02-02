@@ -5,17 +5,17 @@
 * [Subsets](./java/subsets.java)
 * [Subsets II](./java/subsets2.java)
 * [Permutations](./java/permutations.java)
-* [Permutations II](./java/permutations.java)
+* [Permutations II](./java/permutations2.java)
 
 ## level 2 Binary Search
 * [Closest Number in Sorted Array](./java/closetNumberInSortedArray.java)
-* [Last Position of Target](./java/)
-* [Search a 2D Matrix](./java/)
-* [Maximum Number in Mountain Sequence](./java/)
+* [Last Position of Target](./java/lastPositionofTarget.java)
+* [Search a 2D Matrix](./java/searcha2DMatrix.java)
+* [Maximum Number in Mountain Sequence](./java/maximumNumberInMountainSequence.java)
 * [Search in a Big Sorted Array](./java/)
-* [Find Minimum in Rotated Sorted Array](./java/)
+* [Find Minimum in Rotated Sorted Array](./java/findMinimumInRotatedSortedArray.java)
 * [Find Peak Element](./java/)
-* [First Bad Version](./java/)
+* [First Bad Version](./java/firstBadVersion.java)
 * [Search in Rotated Sorted Array](./java/)
 * [Total Occurrence of Target](./java/)
 * [Drop Eggs](./java/)
@@ -78,7 +78,7 @@
 
 ## level 6 Linked List & Array
 * [Insert into a Cyclic Sorted List](./java/)
-* [Merge Two Sorted Lists](./java/)
+* [Merge Two Sorted Lists](./java/mergeTwoSortedLists.java)
 * [Subarray Sum](./java/)
 * [Maximum Subarray](./java/)
 * [Subarray Sum Closest](./java/)
