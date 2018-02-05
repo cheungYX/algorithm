@@ -176,6 +176,8 @@
 * 深搜中出栈的那一步
 
 ## Two Pointers
+* window 同向双指针
+* 数据流
 
 ## Dynamic Programming
 
@@ -194,6 +196,8 @@
 ## Array
 
 ## Hash Table
+* 用来查重
+* 替代: BBST => TreeSet，trie，BloomFilter
 
 ## Binary Tree
 
