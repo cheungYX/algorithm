@@ -33,7 +33,7 @@
 * [Wood Cut](./java/)
 
 ## level 3 Binary Tree & Divide Coquer
-* [Subtree with Maximum Average](./java/)
+* [Minimum Depth of Binary Tree with Maximum Average](./java/)
 * [Minimum Subtree](./java/)
 * [Binary Tree Paths](./java/)
 * [Flatten Binary Tree to Linked List](./java/)
@@ -52,7 +52,7 @@
 * [Binary Tree Maximum Path Sum II](./java/)
 * [Inorder Successor in Binary Search Tree](./java/)
 * [Convert Binary Search Tree to Doubly Linked Lis](./java/)
-* [Minimum Depth of Binary Tree](./java/)
+* [Minimum Depth of Binary Tree](./java/minimumDepthOfBinaryTree.java)
 * [Lowest Common Ancestor](./java/)
 * [Lowest Common Ancestor II](./java/)
 * [Lowest Common Ancestor III](./java/)
@@ -132,7 +132,7 @@
 * [Two Sum](./java/TwoSum.java)
 * [Two Sum - Input array is sorted](./java/)
 * [Two Sum - Less than or equal to target](./java/twoSum-LessThanOrEqualToTarget.java)
-* [Two Sum - Unique pairs](./java/)
+* [Two Sum - Unique pairs](./java/twoSum-UniquePairs.java)
 * [Two Sum - Closest to target](./java/)
 * [Two Sum - Difference equals to target](./java/)
 * [Two Sum - Greater than target](./java/)
@@ -142,7 +142,7 @@
 * [Remove Duplicate Numbers in Array](./java/removeDuplicateNumbersInArray.java)
 * [Sort Colors](./java/)
 * [Sort Colors II](./java/)
-* [Partition Array](./java/)
+* [Partition Array](./java/partitionArray.java)
 * [Partition Array II](./java/)
 * [Window Sum](./java/)
 * [Move Zeroes](./java/)
@@ -161,6 +161,7 @@
 * [#21. Merge Two Sorted Lists](./java/mergeTwoSortedLists.java) [&&ruby](./ruby/merge_two_sorted_lists.rb)
 * [#26. Remove Duplicates from Sorted Array](./java/RemoveDuplicatesfromSortedArray.java)
 * [#77. Combinations](./java/combinations.java)
+* [#111. Minimum Depth of Binary Tree](./java/minimumDepthOfBinaryTree.java)
 
 # Algorithm
 ## Binary Search
