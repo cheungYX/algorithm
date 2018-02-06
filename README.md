@@ -128,10 +128,10 @@
 * [Maximum Subarray Difference](./java/)
 
 ## level 7 Two Pointers
-* [Two Sum - Data structure design](./java/)
+* [Two Sum - Data structure design](./java/twoSumDataStructureDesign.java)
 * [Two Sum](./java/TwoSum.java)
 * [Two Sum - Input array is sorted](./java/)
-* [Two Sum - Less than or equal to target](./java/)
+* [Two Sum - Less than or equal to target](./java/twoSum-LessThanOrEqualToTarget.java)
 * [Two Sum - Unique pairs](./java/)
 * [Two Sum - Closest to target](./java/)
 * [Two Sum - Difference equals to target](./java/)
@@ -139,7 +139,7 @@
 * [3Sum](./java/)
 * [3Sum Closest](./java/)
 * [4Sum](./java/)
-* [Remove Duplicate Numbers in Array](./java/)
+* [Remove Duplicate Numbers in Array](./java/removeDuplicateNumbersInArray.java)
 * [Sort Colors](./java/)
 * [Sort Colors II](./java/)
 * [Partition Array](./java/)
