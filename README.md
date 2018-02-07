@@ -133,7 +133,7 @@
 * [Two Sum - Input array is sorted](./java/)
 * [Two Sum - Less than or equal to target](./java/twoSum-LessThanOrEqualToTarget.java)
 * [Two Sum - Unique pairs](./java/twoSum-UniquePairs.java)
-* [Two Sum - Closest to target](./java/)
+* [Two Sum - Closest to target](./java/twoSum-ClosestToTarget)
 * [Two Sum - Difference equals to target](./java/)
 * [Two Sum - Greater than target](./java/)
 * [3Sum](./java/)
@@ -151,6 +151,29 @@
 * [Triangle Count](./java/)
 
 ## level 8 Data Structure
+* [Hash Function](./java/)
+* [High Five](./java/)
+* [K Closest Points](./java/)
+* [Kth Largest Element II](./java/)
+* [Top k Largest Numbers](./java/)
+* [Top k Largest Numbers II](./java/)
+* [Rehashing](./java/)
+* [Merge k Sorted Lists](./java/)
+* [Ugly Number II](./java/)
+* [strStr II](./java/)
+* [LRU Cache](./java/)
+* [Flatten 2D Vector](./java/)
+* [Merge k Sorted Arrays](./java/)
+* [Top K Frequent Words](./java/)
+* [Heapify](./java/)
+* [Longest Consecutive Sequence](./java/)
+* [Nested List Weight Sum](./java/)
+* [Implement Stack by Two Queues](./java/)
+* [Expression Expand](./java/)
+* [Zigzag Iterator II](./java/)
+* [Zigzag Iterator](./java/)
+* [Flatten Nested List Iterator](./java/)
+* [LFU Cache](./java/)
 
 ## level 9 Dynamic Programming
 
