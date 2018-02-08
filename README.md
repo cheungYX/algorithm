@@ -188,7 +188,9 @@
 * [#107. Binary Tree Level Order Traversal II](./java/binaryTreeLevelOrderTraversal2.java)
 * [#141. Linked List Cycle](./java/linkedListCycle.java)
 * [#142. Linked List Cycle II](./java/linkedListCycle2.java)
+* [#209. Minimum Size Subarray Sum](./java/minimumSizeSubarraySum.java)
 * [#287. Find the Duplicate Number](./java/findTheDuplicateNumber.java)
+* [#345. Reverse Vowels of a String](./ruby/reverseVowelsOfAString.rb)
 
 # Algorithm
 ## Binary Search
