@@ -114,7 +114,7 @@
 * [Subarray Sum Closest](./java/)
 * [Copy List with Random Pointer](./java/copyListwithRandomPointer.java)
 * [Linked List Cycle](./java/linkedListCycle.java)
-* [Linked List Cycle II](./java/)
+* [Linked List Cycle II](./java/linkedListCycle2.java)
 * [Sort List](./java/sortList.java)
 * [Reverse Nodes in k-Group](./java/reverseNodesInk-Group.java)
 * [Median of two Sorted Arrays](./java/medianOfTwoSortedArrays.java)
@@ -186,6 +186,9 @@
 * [#77. Combinations](./java/combinations.java)
 * [#111. Minimum Depth of Binary Tree](./java/minimumDepthOfBinaryTree.java)
 * [#107. Binary Tree Level Order Traversal II](./java/binaryTreeLevelOrderTraversal2.java)
+* [#141. Linked List Cycle](./java/linkedListCycle.java)
+* [#142. Linked List Cycle II](./java/linkedListCycle2.java)
+* [#287. Find the Duplicate Number](./java/findTheDuplicateNumber.java)
 
 # Algorithm
 ## Binary Search
