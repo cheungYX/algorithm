@@ -194,13 +194,15 @@
 
 # Algorithm
 ## Binary Search
-
+* OlogN
+* start + (end - start) / 2
 
 ## Divide Coquer
 
 ## Breadth First Search
 
 ## Depth First Search
+* pre
 
 ## Backtracking
 * 深搜中出栈的那一步
@@ -218,10 +220,39 @@
 
 # Data Structure
 ## Stack
+* LIFO
 
-## Queuq
+```java
+public class Stack {
+    private int[] data;
+    private int size;
+    private int top = 0; // 指向栈的顶部
+
+    public Stack(int size) {
+        this.size = size;
+        this.data = new int[size];
+    }
+}
+```
+
+## Queue
+* FIFO
+
+
 
 ## Linked List
+
+```java
+class LinkNode {
+    public int data;
+    public LinkNode next;
+
+    public LinkNode(int data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+```
 
 ## Array
 
@@ -231,7 +262,16 @@
 
 ## Binary Tree
 
+```java
+class Node {
+    public Object data;
+    public Node left;
+    public Node right;
+}
+```
+
 ## Heap
+
 
 ## Union Find
 
