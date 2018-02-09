@@ -202,7 +202,9 @@
 ## Breadth First Search
 
 ## Depth First Search
-* pre
+* [pre order]()
+* [in order]()
+* []
 
 ## Backtracking
 * 深搜中出栈的那一步
@@ -274,6 +276,38 @@ class Node {
 
 
 ## Union Find
+
+```
+class UnionFind{
+    HashMap<Integer, Integer> father = new HashMap<Integer, Integer>();
+    UnionFind(int n){
+        for(int i = 0 ; i < n; i++) {
+            father.put(i, i);
+        }
+    }
+    int compressed_find(int x){
+        int parent =  father.get(x);
+        while(parent!=father.get(parent)) {
+            parent = father.get(parent);
+        }
+        int temp = -1;
+        int fa = father.get(x);
+        while(fa!=father.get(fa)) {
+            temp = father.get(fa);
+            father.put(fa, parent) ;
+            fa = temp;
+        }
+        return parent;
+    }
+
+    void union(int x, int y){
+        int fa_x = compressed_find(x);
+        int fa_y = compressed_find(y);
+        if(fa_x != fa_y)
+            father.put(fa_x, fa_y);
+    }
+}
+```
 
 ## Trie
 
