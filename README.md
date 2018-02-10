@@ -259,8 +259,12 @@ class LinkNode {
 ## Array
 
 ## Hash Table
+* O(size of key)
 * 用来查重
 * 替代: BBST => TreeSet，trie，BloomFilter
+
+* LFU
+* LRU
 
 ## Binary Tree
 
@@ -273,6 +277,18 @@ class Node {
 ```
 
 ## Heap
+* vs PriorityQueue 
+
+
+|               | TreeMap    |  Heap    |   PriorityQueue |
+| :----------   | :-------:  | :------: | :-------------: |
+| 1. Insert()   |    logn    |   logn   |      logn       |
+| 2. Delete()   |    logn    |   logn   |      O(n) / X   |
+| 3. Pop()      |    logn    |   logn   |      logn       |
+| 4. Find()     |    logn    |   logn   |        X        |
+| 5. Modify()   |    logn    |   logn   |        X        |
+| 6. Min / Max  |    logn    |   O(1)   |      O(1)       |
+| 7. upper / lower | logn    |     X    |        X        |
 
 
 ## Union Find
