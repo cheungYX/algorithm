@@ -213,6 +213,16 @@
 * OlogN
 * start + (end - start) / 2
 
+* [Swap Bits](./java/)
+* [A + B Problem](./java/)
+* [Update Bit](./java/)
+* [Count 1 in Binary](./java/)
+* [Flip Bits](./java/)
+* [O(1) Check Power of 2](./java/)
+* [Single Number](./java/)
+* [Single Number II](./java/)
+* [Single Number III](./java/)
+
 ## Divide Coquer
 
 ## Breadth First Search
