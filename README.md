@@ -176,7 +176,23 @@
 * [LFU Cache](./java/)
 
 ## level 9 Dynamic Programming
-
+* [Unique Paths](./java/)
+* [Unique Paths II](./java/)
+* [Climbing Stairs](./java/)
+* [Climbing Stairs II](./java/)
+* [Minimum Path Sum](./java/)
+* [Triangle](./java/)
+* [Largest Divisible Subset](./java/)
+* [Knight Shortest Path](./java/)
+* [Knight Shortest Path II](./java/)
+* [Perfect Squares](./java/)
+* [Jump Game](./java/)
+* [Jump Game II](./java/)
+* [Longest Increasing Subsequence](./java/)
+* [Russian Doll Envelopes](./java/)
+* [Frog Jump](./java/)
+* [Drop Eggs](./java/)
+* [Drop Eggs II](./java/)
 
 # Leet Code
 * [#1. Tow Sum](./java/TwoSum.java) [&&ruby](./ruby/two_sum.rb)
@@ -199,6 +215,16 @@
 * OlogN
 * start + (end - start) / 2
 
+* [Swap Bits](./java/)
+* [A + B Problem](./java/)
+* [Update Bit](./java/)
+* [Count 1 in Binary](./java/)
+* [Flip Bits](./java/)
+* [O(1) Check Power of 2](./java/)
+* [Single Number](./java/)
+* [Single Number II](./java/)
+* [Single Number III](./java/)
+
 ## Divide Coquer
 
 ## Breadth First Search
@@ -218,7 +244,7 @@
 * 数据流
 
 ## Dynamic Programming
-* 记忆化搜索 
+* 记忆化搜索
 * 子问题有交集
 * 状态定义 => 初始化 => 循环递推求解 => 求结果:起点
 * 题型: 最值，判断可行性，统计方案个数
