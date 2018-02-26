@@ -6,6 +6,7 @@
 * [Subsets II](./java/subsets2.java)
 * [Permutations](./java/permutations.java)
 * [Permutations II](./java/permutations2.java)
+* [Longest Palindrome](.java/Longest Palindrome)
 
 ## level 2 Binary Search
 * [Closest Number in Sorted Array](./java/closetNumberInSortedArray.java)
@@ -207,6 +208,7 @@
 * [#209. Minimum Size Subarray Sum](./java/minimumSizeSubarraySum.java)
 * [#287. Find the Duplicate Number](./java/findTheDuplicateNumber.java)
 * [#345. Reverse Vowels of a String](./ruby/reverseVowelsOfAString.rb)
+* [#409. Longest Palindrome](.ruby/longest_palindrome.rb)
 
 # Algorithm
 ## Binary Search
@@ -310,7 +312,7 @@ class Node {
 ```
 
 ## Heap
-* vs PriorityQueue 
+* vs PriorityQueue
 
 
 |               | TreeMap    |  Heap    |   PriorityQueue |
@@ -359,5 +361,7 @@ class UnionFind{
 ```
 
 ## Trie
+[ex](./ruby/trie_tree.rb)
+
 
 ## Graph
