@@ -6,7 +6,9 @@
 * [Subsets II](./java/subsets2.java)
 * [Permutations](./java/permutations.java)
 * [Permutations II](./java/permutations2.java)
-* [Longest Palindrome](.java/Longest Palindrome)
+* [Longest Palindrome](.java/longestPalindrome.java)
+* [Valid Palindrome](.java/validPalindrome.java)
+* [Longest Palindromic Substring](.java/longestPalindromicSubstring.java)
 
 ## level 2 Binary Search
 * [Closest Number in Sorted Array](./java/closetNumberInSortedArray.java)
@@ -211,8 +213,6 @@
 * [#409. Longest Palindrome](.ruby/longest_palindrome.rb)
 
 # Algorithm
-* 模拟，搜索，DP，图论
-
 ## Binary Search
 * OlogN
 * start + (end - start) / 2
