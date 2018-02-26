@@ -211,6 +211,8 @@
 * [#409. Longest Palindrome](.ruby/longest_palindrome.rb)
 
 # Algorithm
+* 模拟，搜索，DP，图论
+
 ## Binary Search
 * OlogN
 * start + (end - start) / 2
