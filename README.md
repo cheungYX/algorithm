@@ -197,6 +197,22 @@
 * [Drop Eggs](./java/)
 * [Drop Eggs II](./java/)
 
+# advance
+## level 1
+
+## level 2
+
+## level 3
+
+## level 4
+
+## level 5
+
+## level 6
+
+## level 7
+
+
 # Leet Code
 * [#1. Tow Sum](./java/TwoSum.java) [&&ruby](./ruby/two_sum.rb)
 * [#2. Add Two Numbers](./java/addTwoNumbers.java)
@@ -251,6 +267,8 @@
 * 状态定义 => 初始化 => 循环递推求解 => 求结果:起点
 * 题型: 最值，判断可行性，统计方案个数
 * 2^n n! => n^2 n^3
+
+## Moving window
 
 ## Scan-line algorithm
 
