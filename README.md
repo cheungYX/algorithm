@@ -199,18 +199,29 @@
 
 # advance
 ## level 1 Windows Moving
+* [Kth Smallest Number in Sorted Matrix](./java/)
+* [Minimum Size Subarray Sum](./java/)
+* [Longest Substring Without Repeating Characters](./java/)
+* [Longest Substring with At Most K Distinct Characters](./java/)
+* [Kth Smallest Sum In Two Sorted Arrays](./java/)
+* [Kth Largest in N Arrays](./java/)
+* [Two Sum - Less than or equal to target](./java/)
+* [Kth Smallest Numbers in Unsorted Array](./java/)
+* [Triangle Count](./java/)
+* [Minimum Window Substring](./java/)
+* [Kth Largest Element](./java/)
 
 ## level 2 UnionFind & Trie
 
 ## level 3 Heap & Stack
 
-## level 4
+## level 4 Binary Search + Sweep Line
 
-## level 5
+## level 5 Dynamic Problem I
 
-## level 6
+## level 6 Dynamic Problem II
 
-## level 7
+## level 7 Follow Up
 
 
 # Leet Code
