@@ -198,11 +198,11 @@
 * [Drop Eggs II](./java/)
 
 # advance
-## level 1
+## level 1 Windows Moving
 
-## level 2
+## level 2 UnionFind & Trie
 
-## level 3
+## level 3 Heap & Stack
 
 ## level 4
 
@@ -269,6 +269,20 @@
 * 2^n n! => n^2 n^3
 
 ## Moving window
+
+```java
+for (int i = 0; i < n; i++) {
+    while(j < n) {
+        if(满足条件) {
+            j++;
+            更新j状态
+        } else(不满足条件) {
+            break;
+        }
+        更新i状态
+    }
+}
+```
 
 ## Scan-line algorithm
 
@@ -380,8 +394,31 @@ class UnionFind{
 }
 ```
 
+```java
+public class UnionFind {
+    private int[] father = null;
+
+    public int find(int x) {
+        if (father[x] == x) {
+            return x;
+        }
+        return father[x] = find(father[x]);
+    }
+
+    public void union(int a, int b) {
+        int root_a = find(a);
+        int root_b = find(b);
+        if (root_a != root_b) {
+            father[root_a] = root_b;
+        }
+    }
+}
+```
+
 ## Trie
 [ex](./ruby/trie_tree.rb)
 
+* 和Hash比更加节约空间
+* 可用来优化某些dfs
 
 ## Graph
