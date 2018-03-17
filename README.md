@@ -212,6 +212,24 @@
 * [Kth Largest Element](./java/)
 
 ## level 2 UnionFind & Trie
+* [Number of Islands](./java/)
+* [Number of Islands II](./java/)
+* [Connecting Graph](./java/)
+* [Connecting Graph II](./java/)
+* [Connecting Graph III](./java/)
+* [Graph Valid Tree](./java/)
+* [Add and Search Word](./java/)
+* [Implement Trie](./java/)
+* [Find the Weak Connected Component in the Directed Graph](./java/)
+* [Connected Component in Undirected Graph](./java/)
+* [Word Search](./java/)
+* [Word Search II](./java/)
+* [Surrounded Regions](./java/)
+* [Boggle Game](./java/)
+* [Word Squares](./java/)
+* [Kth Smallest Sum In Two Sorted Arrays](./java/)
+* [Count of Smaller Number before itself](./java/)
+* [Interval Sum II](./java/)
 
 ## level 3 Heap & Stack
 
