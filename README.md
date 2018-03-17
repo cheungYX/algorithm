@@ -61,8 +61,8 @@
 * [Lowest Common Ancestor III](./java/)
 
 ## level 4 Breadth First Search
-* [Number of Islands](./java/)
-* [Number of Islands II](./java/)
+* [Number of Islands](./java/NumberOfIslands.java)
+* [Number of Islands II](./java/NumberOfIslands2.java)
 * [Binary Tree Level Order Traversal](./java/)
 * [Binary Tree Level Order Traversal II](./java/)
 * [Course Schedule](./java/)
@@ -197,12 +197,12 @@
 * [Drop Eggs](./java/)
 * [Drop Eggs II](./java/)
 
-# advance
+# LintCode Ladder advance
 ## level 1 Windows Moving
-* [Kth Smallest Number in Sorted Matrix](./java/)
-* [Minimum Size Subarray Sum](./java/)
-* [Longest Substring Without Repeating Characters](./java/)
-* [Longest Substring with At Most K Distinct Characters](./java/)
+* [Kth Smallest Number in Sorted Matrix](./java/KthSmallestNumberInSortedMatrix.java)
+* [Minimum Size Subarray Sum](./java/MinimumSizeSubarraySum.java)
+* [Longest Substring Without Repeating Characters](./java/LongestSubstringWithoutRepeatingCharacters.java)
+* [Longest Substring with At Most K Distinct Characters](./java/LongestSubstringWithAtMostKDistinctCharacters.java)
 * [Kth Smallest Sum In Two Sorted Arrays](./java/)
 * [Kth Largest in N Arrays](./java/)
 * [Two Sum - Less than or equal to target](./java/)
@@ -212,12 +212,12 @@
 * [Kth Largest Element](./java/)
 
 ## level 2 UnionFind & Trie
-* [Number of Islands](./java/)
-* [Number of Islands II](./java/)
-* [Connecting Graph](./java/)
-* [Connecting Graph II](./java/)
-* [Connecting Graph III](./java/)
-* [Graph Valid Tree](./java/)
+* [Number of Islands](./java/NumberOfIslands.java)
+* [Number of Islands II](./java/NumberOfIslands2.java)
+* [Connecting Graph](./java/ConnectingGraph.java)
+* [Connecting Graph II](./java/ConnectingGraph2.java)
+* [Connecting Graph III](./java/ConnectingGraph3.java)
+* [Graph Valid Tree](./java/GraphValidTree.java)
 * [Add and Search Word](./java/)
 * [Implement Trie](./java/)
 * [Find the Weak Connected Component in the Directed Graph](./java/)
