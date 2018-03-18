@@ -272,6 +272,8 @@
 * [Single Number II](./java/)
 * [Single Number III](./java/)
 
+## Robin-Karp
+
 ## Divide Coquer
 
 ## Breadth First Search
@@ -451,3 +453,7 @@ public class UnionFind {
 * 可用来优化某些dfs
 
 ## Graph
+
+
+# other
+* crack and code inetrview
