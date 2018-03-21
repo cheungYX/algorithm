@@ -232,6 +232,29 @@
 * [Interval Sum II](./java/)
 
 ## level 3 Heap & Stack
+* [Expression Expand](./java/)
+* [Trapping Rain Water](./java/)
+* [Implement Queue by Two Stacks](./java/)
+* [Min Stack](./java/)
+* [Sliding Window Median](./java/)
+* [Trapping Rain Water II ](./java/)
+* [Maximal Rectangle](./java/)
+* [Max Tree](./java/)
+* [Largest Rectangle in Histogram](./java/)
+* [Data Stream Median](./java/)
+* [Sliding Window Maximum](./java/)
+* [Binary Tree Maximum Path Sum II](./java/)
+* [Heapify](./java/)
+* [Min Stac](./java/)
+* [K Edit Distance](./java/)
+* [Maximal Rectangle](./java/)
+* [Expression Tree Build](./java/)
+* [Convert Expression to Reverse Polish Notation](./java/)
+* [Convert Expression to Polish Notation](./java/)
+* [Expression Evaluation](./java/)
+* [Max Tree](./java/)
+* [Data Stream Median](./java/)
+* [Sliding Window Maximum](./java/)
 
 ## level 4 Binary Search + Sweep Line
 
@@ -273,6 +296,12 @@
 * [Single Number III](./java/)
 
 ## Robin-Karp
+
+## Topological sorting
+
+## External Sorting
+
+## Binary Index Tree
 
 ## Divide Coquer
 
@@ -448,6 +477,60 @@ public class UnionFind {
 
 ## Trie
 [ex](./ruby/trie_tree.rb)
+
+```java
+class TrieNode {
+    public TrieNode[] children;
+    public boolean isWord;
+    
+    public TrieNode() {
+        children = new TrieNode[26];
+        for (int i = 0; i < 26; ++i) {
+            children[i] = null;
+        }
+        isWord = false;
+    }
+}
+
+private TrieNode root;
+ 
+public WordDictionary(){
+    root = new TrieNode();
+}
+
+public void addWord(String word) {
+    // write your code here
+    TrieNode current = root;
+    for(int i = 0; i < word.length(); i++) {
+        Character c = word.charAt(i);
+        if (current.children[c - 'a'] == null) {
+            current.children[c - 'a'] = new TrieNode();
+        }
+        current = current.children[c - 'a'];
+    }
+    current.isWord = true;
+}
+
+boolean find(String word, int index, TrieNode now) {
+    if(index == word.length()) {
+        return now.isWord;
+    }
+    
+    Character c = word.charAt(index);
+    if (c == '.') {
+        for(int i = 0; i < 26; ++i) 
+        if (now.children[i] != null) {
+            if (find(word, index+1, now.children[i]))
+                return true;
+        }
+        return false;
+    } else if (now.children[c - 'a'] != null) {
+        return find(word, index+1, now.children[c - 'a']);  
+    } else {
+        return false;
+    }
+}
+```
 
 * 和Hash比更加节约空间
 * 可用来优化某些dfs
