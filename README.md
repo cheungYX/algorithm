@@ -257,6 +257,19 @@
 * [Sliding Window Maximum](./java/)
 
 ## level 4 Binary Search + Sweep Line
+* [Sqrt(x)](./java/)
+* [Sqrt(x) II](./java/)
+* [Maximum Average Subarray II](./java/)
+* [Number of Airplanes in the Sky](./java/)
+* [Divide Two Integers](./java/)
+* [Find Peak Element](./java/)
+* [Find Peak Element II](./java/)
+* [First Bad Version](./java/)
+* [Copy Books](./java/)
+* [Wood Cut](./java/)
+* [Find the Duplicate Number](./java/)
+* [Smallest Rectangle Enclosing Black Pixels](./java/)
+* [Building Outline](./java/)
 
 ## level 5 Dynamic Problem I
 
@@ -310,7 +323,7 @@
 ## Depth First Search
 * [pre order]()
 * [in order]()
-* []
+* [post order]()
 * 优化
   * 重复计算 无效计算
 
@@ -482,7 +495,7 @@ public class UnionFind {
 class TrieNode {
     public TrieNode[] children;
     public boolean isWord;
-    
+
     public TrieNode() {
         children = new TrieNode[26];
         for (int i = 0; i < 26; ++i) {
@@ -493,7 +506,7 @@ class TrieNode {
 }
 
 private TrieNode root;
- 
+
 public WordDictionary(){
     root = new TrieNode();
 }
@@ -515,17 +528,17 @@ boolean find(String word, int index, TrieNode now) {
     if(index == word.length()) {
         return now.isWord;
     }
-    
+
     Character c = word.charAt(index);
     if (c == '.') {
-        for(int i = 0; i < 26; ++i) 
+        for(int i = 0; i < 26; ++i)
         if (now.children[i] != null) {
             if (find(word, index+1, now.children[i]))
                 return true;
         }
         return false;
     } else if (now.children[c - 'a'] != null) {
-        return find(word, index+1, now.children[c - 'a']);  
+        return find(word, index+1, now.children[c - 'a']);
     } else {
         return false;
     }
@@ -537,6 +550,18 @@ boolean find(String word, int index, TrieNode now) {
 
 ## Graph
 
+
+## DP
+* state, function, intialization, result
+* 记忆化搜索来达到减枝的目的
+* 矩阵
+* 记忆化搜索
+ * 状态转移特别麻烦，不是顺序性
+ * 初始化状态不好找
+ * 从大到小
+* 博弈类
+ * 画出搜索树，只考虑先手策略
+* 空间类
 
 # other
 * crack and code inetrview
