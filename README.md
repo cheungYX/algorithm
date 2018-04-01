@@ -237,7 +237,7 @@
 * [Implement Queue by Two Stacks](./java/)
 * [Min Stack](./java/)
 * [Sliding Window Median](./java/)
-* [Trapping Rain Water II ](./java/)
+* [Trapping Rain Water II](./java/)
 * [Maximal Rectangle](./java/)
 * [Max Tree](./java/)
 * [Largest Rectangle in Histogram](./java/)
@@ -272,8 +272,26 @@
 * [Building Outline](./java/)
 
 ## level 5 Dynamic Problem I
+* [Longest Increasing Continuous Subsequence](.java)
+* [Longest Increasing Continuous subsequence II](.java)
+* [Maximum Subarray](.java)
+* [Maximal Square](.java)
+* [Maximal Square II](.java)
+* [Longest Palindromic Substring](.java)
+* [Coins in a Line](.java)
+* [Coins in a Line II](.java)
+* [Coins in a Line III](.java)
+* [House Robber](.java)
+* [Maximum Product Subarray](.java)
+* [Longest Increasing Subsequence](.java)
+* [Copy Books](.java)
+* [Copy Books II](.java)
+* [Longest Repeating Subsequence](.java)
+* [Post Office Problem](.java)
+* [Best Time to Buy and Sell Stock IV](.java)
 
 ## level 6 Dynamic Problem II
+
 
 ## level 7 Follow Up
 
