@@ -35,6 +35,7 @@
 * [Copy Books](./java/CopyBooks.java)
 * [Wood Cut](./java/WoodCut.java)
 * [Pow(x, n)](./java/Pow.java)
+* [Fast Power](./java/FastPower.java)
 
 ## level 3 Binary Tree & Divide Coquer
 * [Minimum Depth of Binary Tree with Maximum Average](./java/)
@@ -93,18 +94,19 @@
 * [Subsets II](./java/subsets2.java)
 * [Permutations](./java/permutations.java)
 * [Permutations II](./java/permutations2.java)
-* [Word Ladder](./java/)
+* [Word Ladder](./java/wordLadder.java)
 * [Word Ladder II](./java/wordLadder2.java)
-* [Next Permutation](./java/)
-* [Next Permutation II](./java/)
-* [Previous Permutation](./java/)
-* [Palindrome Partitioning II](./java/)
-* [Word Break II](./java/)
-* [String Permutation](./java/)
-* [String Permutation II](./java/)
-* [Permutation Index](./java/)
-* [Permutation Index II](./java/)
-* [Word Break](./java/)
+* [Next Permutation](./java/NextPermutation.java)
+* [Next Permutation II](./java/NextPermutation2.java)
+* [Previous Permutation](./java/PreviousPermutation.java)
+* [Palindrome Partitioning II](./java/PalindromePartitioning2.java)
+* [Word Break](./java/WordBreak.java)
+* [Word Break II](./java/WordBreak2.java)
+* [String Permutation](./java/StringPermutation.java)
+* [String Permutation II](./java/StringPermutation2.java)
+* [Permutation Index](./java/PermutationIndex.java)
+* [Permutation Index II](./java/PermutationIndex2.java)
+
 
 ## level 6 Linked List & Array
 * [Insert into a Cyclic Sorted List](./java/insertInToACyclicSortedList.java)
