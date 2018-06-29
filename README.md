@@ -144,6 +144,7 @@
 * [Two Sum - Closest to target](./java/twoSum-ClosestToTarget.java)
 * [Two Sum - Difference equals to target](./java/TwoSum-Differenceequalstotarget.java)
 * [Two Sum - Greater than target](./java/TwoSum-Greaterthantarget.java)
+* [Two Sum III - Data structure design]()
 * [3Sum](./java/3Sum.java)
 * [3Sum Closest](./java/3SumClosest.java)
 * [4Sum](./java/4Sum.java)
@@ -158,12 +159,19 @@
 * [Valid Palindrome II](./java/validPalindrome2.java)
 * [Kth Smallest Numbers in Unsorted Array](./java/KthSmallestNumbersinUnsortedArray.java)
 * [Triangle Count](./java/TriangleCount.java)
+* [Middle of Linked List]()
+* [Sort Integers II]()
+* [Kth Largest Element]()
+* [Pancake Sorting]()
+* [Intersection of Two Linked Lists]()
+* [Linked List Cycle](./java/linkedListCycle.java)
+* [Linked List Cycle II](./java/linkedListCycle2.java)
 
 ## level 8 Data Structure
 * [Hash Function](./java/HashFunction.java)
 * [High Five](./java/HighFive.java)
 * [K Closest Points](./java/KClosestPoints.java)
-* [Kth Largest Element II](./java/KthLargestElement.java)
+* [Kth Largest Element II](./java/KthLargestElement2.java)
 * [Top k Largest Numbers](./java/TopkLargestNumbers.java)
 * [Top k Largest Numbers II](./java/TopkLargestNumbers2.java)
 * [Rehashing](./java/Rehashing.java)
@@ -207,6 +215,8 @@
 * [Drop Eggs](./java/DropEggs.java)
 * [Drop Eggs II](./java/DropEggs2.java)
 
+
+
 # LintCode Ladder advance
 ## level 1 Windows Moving
 * [Kth Smallest Number in Sorted Matrix](./java/KthSmallestNumberInSortedMatrix.java)
@@ -228,7 +238,7 @@
 * [Connecting Graph II](./java/ConnectingGraph2.java)
 * [Connecting Graph III](./java/ConnectingGraph3.java)
 * [Graph Valid Tree](./java/GraphValidTree.java)
-* [Add and Search Word](./java/)
+* [Add and Search Word](./java/AddandSearchWord.java)
 * [Implement Trie](./java/)
 * [Find the Weak Connected Component in the Directed Graph](./java/)
 * [Connected Component in Undirected Graph](./java/)
