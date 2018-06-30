@@ -314,6 +314,8 @@
 * [Best Time to Buy and Sell Stock II](./java/BestTimetoBuyandSellStock2.java)
 * [Best Time to Buy and Sell Stock III](./java/BestTimetoBuyandSellStock3.java)
 * [Best Time to Buy and Sell Stock IV](./java/BestTimetoBuyandSellStock4.java)
+* [Best Time to Buy and Sell Stock with Cooldown](./java/BestTimetoBuyandSellStockwithCooldown.java)
+* [Best Time to Buy and Sell Stock with Transaction Fee](./java/BestTimetoBuyandSellStockwithTransactionFee.java)
 
 ## level 6 Dynamic Problem II
 * [Stone Game](./java/StoneGame.java)
@@ -328,15 +330,16 @@
 * [Backpack VI](./java/Backpack6.java)
 * [Longest Common Subsequence](./java/LongestCommonSubsequence.java)
 * [Scramble String](./java/ScrambleString.java)
-* [Distinct Subsequences](./java/)
-* [Minimum Adjustment Cost](./java/)
-* [Interleaving String](./java/)
-* [Burst Balloons](./java/)
-* [k Sum](./java/)
+* [Distinct Subsequences](./java/DistinctSubsequences.java)
+* [Minimum Adjustment Cost](./java/MinimumAdjustmentCost.java)
+* [Interleaving String](./java/InterleavingString.java)
+* [Burst Balloons](./java/BurstBalloons.java)
+* [k Sum](./java/kSum.java)
+* [k Sum II](./java/kSum2.java)
 * [Coins in a Line](./java/CoinsinaLine.java)
 * [Coins in a Line II](./java/CoinsinaLine2.java)
 * [Coins in a Line III](./java/CoinsinaLine3.java)
-* [Combination Sum IV](./java/)
+* [Combination Sum IV](./java/CombinationSum4.java)
 
 ## level 7 Follow Up
 * [Flatten Binary Tree to Linked List](./java/FlattenBinaryTreetoLinkedList.java)
