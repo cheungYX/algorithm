@@ -334,7 +334,28 @@
 * [Combination Sum IV](./java/)
 
 ## level 7 Follow Up
-
+* [Flatten Binary Tree to Linked List](./java/FlattenBinaryTreetoLinkedList.java)
+* [Flatten List](./java/)
+* [Subarray Sum](./java/SubarraySum.java)
+* [Flatten Nested List Iterator](./java/)
+* [Submatrix Sum](./java/)
+* [Continuous Subarray Sum](./java/)
+* [Continuous Subarray Sum II](./java/)
+* [Kth Smallest Number in Sorted Matrix](./java/)
+* [Minimum Size Subarray Sum](./java/minimumSizeSubarraySum.java)
+* [Subarray Sum Closest](./java/SubarraySumClosest.java)
+* [Find Peak Element](./java/findPeakElement.java)
+* [Find Peak Element II](./java/FindPeakElement2.java)
+* [Sliding Window Matrix Maximum](./java/)
+* [Subarray Sum II](./java/)
+* [Maximum Gap](./java/)
+* [Nested List Weight Sum](./java/)
+* [Flatten 2D Vector](./java/)
+* [Bomb Enemy](./java/)
+* [Zigzag Iterator](./java/ZigzagIterator.java)
+* [Zigzag Iterator II](./java/ZigzagIterator2.java)
+* [Build Post Office](./java/BuildPostOffice.java)
+* [Build Post Office II](./java/BuildPostOffice2.java)
 
 # Leet Code
 * [#1. Tow Sum](./java/TwoSum.java) [&&ruby](./ruby/two_sum.rb)
