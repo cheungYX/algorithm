@@ -366,7 +366,7 @@
 * [Build Post Office II](./java/BuildPostOffice2.java)
 
 # Leet Code
-* [#1. Tow Sum](./java/TwoSum.java) [&&ruby](./ruby/two_sum.rb)
+* [#1. Tow Sum](./java/TwoSum.java) [&&ruby](./ruby/two_sum.rb) [&&go](./go/two_sum.go)
 * [#2. Add Two Numbers](./java/addTwoNumbers.java)
 * [#21. Merge Two Sorted Lists](./java/mergeTwoSortedLists.java) [&&ruby](./ruby/merge_two_sorted_lists.rb)
 * [#26. Remove Duplicates from Sorted Array](./java/RemoveDuplicatesfromSortedArray.java)
