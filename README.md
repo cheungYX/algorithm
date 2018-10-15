@@ -472,6 +472,16 @@ public class Stack {
 
 
 ## Linked List
+* [Middle of the Linked List](./go/middle_of_the_linked_list.go)
+* [Reverse Linked List](./go)
+* [Merge Two Sorted Lists](./go)
+* [Linked List Cycle](./go)
+* [Delete Node in a Linked List](./go)
+* 注意点
+  * 如果链表为空时，代码是否能正常工作？
+  * 如果链表只包含一个结点时，代码是否能正常工作？
+  * 如果链表只包含两个结点时，代码是否能正常工作？
+  * 代码逻辑在处理头结点和尾结点的时候，是否能正常工作？
 
 ```java
 class LinkNode {
