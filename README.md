@@ -473,7 +473,7 @@ public class Stack {
 
 ## Linked List
 * [Middle of the Linked List](./go/middle_of_the_linked_list.go)
-* [Reverse Linked List](./go)
+* [Reverse Linked List](./go/reverse_linked_list.go)
 * [Merge Two Sorted Lists](./go)
 * [Linked List Cycle](./go)
 * [Delete Node in a Linked List](./go)
@@ -502,6 +502,12 @@ class ListNode
 		@next = nil
 	end
 end
+
+head = ListNode.new(1)
+head.next = ListNode.new(2)
+head.next.next = ListNode.new(3)
+head.next.next.next = ListNode.new(4)
+head.next.next.next.next = ListNode.new(5)
 ```
 
 ## Array
