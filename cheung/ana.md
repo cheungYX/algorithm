@@ -12,7 +12,7 @@
 
 
 # 里程怎么用
-里程的作用大概有以下几种</br>
+里程的作用大概有以下几种
 * 换机票
   * 下一章节详细说明 
 * 换成sky coin 当货币使用
@@ -31,7 +31,8 @@
 ## 里程兑换的机票
 里程兑换成其他物品的价值往往要远小于兑换机票,</br>
 比如用里程兑换头等舱往返票 </br>
-需要的里程数为20万，直接购买需要100万以上的日币 </br>
+需要的里程数为18万 </br>
+直接购买需要100万以上的日币 </br>
 所以1里程能当5日元使用 </br>
 而其他消费里程的方式基本1里程只能有1.几日元 </br>
 所以推荐积累着里程换机票 </br>
@@ -39,11 +40,37 @@
 需要的里程数根据飞行跨度和忙季闲季而不同 </br>
 总结了一下东京出发飞各个地区需要的里程 </br>
 (每年会更新，以官网为准) </br>
+以东京出发为基准，那些日子是淡季忙季请查看官网 </br>
 
-* 更新中
+| 区分 | 目的地 |  代表地  | 经济舱 | 商务舱 | 头等舱 |
+| ---- |:------:|:--------:|:------:|:------:|:------:|
+| 闲季 | zone1  | 沖縄     | 14000  |        |        |
+| 普通 | zone1  | 沖縄     | 18000  |        |        |
+| 忙季 | zone1  | 沖縄     | 21000  |        |        |
+| 闲季 | zone2  | 韩国     | 12000  | 25000  |        |
+| 普通 | zone2  | 韩国     | 15000  | 30000  |        |
+| 忙季 | zone2  | 韩国     | 18000  | 33000  |        |
+| 闲季 | zone3  | 中国国内 | 17000  | 35000  |        |
+| 普通 | zone3  | 中国国内 | 20000  | 40000  |        |
+| 忙季 | zone3  | 中国国内 | 23000  | 43000  |        |
+| 闲季 | zone4  | 东南亚   | 30000  | 55000  | 105000 |
+| 普通 | zone4  | 东南亚   | 35000  | 60000  | 105000 |
+| 忙季 | zone4  | 东南亚   | 38000  | 63000  | 114000 |
+| 闲季 | zone5  | 夏威夷   | 35000  | 60000  | 120000 |
+| 普通 | zone5  | 夏威夷   | 40000  | 65000  | 120000 |
+| 忙季 | zone5  | 夏威夷   | 43000  | 68000  | 129000 |
+| 闲季 | zone6  | 北美     | 40000  | 75000  | 150000 |
+| 普通 | zone6  | 北美     | 50000  | 85000  | 150000 |
+| 忙季 | zone6  | 北美     | 55000  | 90000  | 165000 |
+| 闲季 | zone7  | 欧洲     | 45000  | 80000  | 165000 |
+| 普通 | zone7  | 欧洲     | 55000  | 90000  | 165000 |
+| 忙季 | zone7  | 欧洲     | 60000  | 95000  | 180000 |
+| 闲季 | zone10 | 澳洲     | 37000  | 65000  |        |
+| 普通 | zone10 | 澳洲     | 45000  | 75000  |        |
+| 忙季 | zone10 | 澳洲     | 50000  | 80000  |        |
 
-
-[官网详细说明](https://www.ana.co.jp/ja/jp/amc/reference/tukau/award/int/usage.html)
+[日本国内机票交换里程数](https://www.ana.co.jp/ja/jp/amc/reference/tukau/award/dom/terms.html)
+[海外机票需要里程数](https://www.ana.co.jp/ja/jp/amc/reference/tukau/award/int/usage.html)
 
 需要注意的事
 * 里程也有消费日期
@@ -73,7 +100,7 @@
 ## AMC: ana mileage club
 简单来说就是ana的会员系统， </br>
 注册登陆了才能管理和使用里程 </br>
-[点击注册ana会员](https://www.ana.co.jp/amc/reference/anacard/mgm/regist/)
+[点击注册ana会员](https://www.ana.co.jp/amc/reference/anacard/mgm/regist/) </br>
 填写下面的介绍人信息可以获得500里程 </br>
 紹介番号	00051167 </br>
 カナ氏名	チヨウ　イシン </br>
@@ -87,6 +114,7 @@
 简单来说就是互联网广告的一种,</br>
 通过完成指定的任务来获得积分，</br>
 而积分又可以用来换成其它的积分 </br>
+推荐这家积分网站
 [点击注册](https://pointi.jp/p/?a=rbf880550022)
 
 ## ソラチカカード
@@ -95,9 +123,9 @@
 根据メトロ的乘车距离给予对应的point, </br>
 重点是通过这张卡可以把メトロpoint交换成ana 里程, </br>
 而且交换比例好的惊人, </br>
-100 point可以换 90里程
+100 point可以换 90里程 </br>
+[点击查看详细办卡](https://pointi.jp/contents/ad_intro_bonus/detail.php?c=%2F7qHprWcUVYxERri1twIQjEMthJJItRZorDuhjdfGT0%3D&s=kiKSriDi7xM%3D)
 
-https://pointi.jp/contents/ad_intro_bonus/detail.php?c=%2F7qHprWcUVYxERri1twIQjEMthJJItRZorDuhjdfGT0%3D&s=kiKSriDi7xM%3D
 
 ## 总结:撸里程的流畅
 (1)积分网站完成广告任务拿到站内积分 </br>
@@ -134,15 +162,16 @@ metro point交换的每月上限是20000 point </br>
 
 # 推荐的一些商品
 ## 雀巢咖啡定期便
-[点击查看详细](https://pointi.jp/contents/ad_intro_bonus/detail.php?c=%2F7qHprWcUVYxERri1twIQjEMthJJItRZorDuhjdfGT0%3D&s=lo1J6vX%2Bjm0%3D)
-强烈推荐的活动，第一次购买的物品第二次继续的才需要付费 </br>
+[点击查看详细](https://pointi.jp/contents/ad_intro_bonus/detail.php?c=%2F7qHprWcUVYxERri1twIQjEMthJJItRZorDuhjdfGT0%3D&s=lo1J6vX%2Bjm0%3D)</br>
+强烈推荐的活动，</br>
+第一次购买的物品第二次续订的才需要付费 </br>
 第二次需要购买8000, 第三次4000, 第四次4000 </br>
 总共付费24000，获得的积分也是价值24000, </br>
 所以约等于免费得到了价值7万+的商品 </br>
 或者花24000得到了7万+的商品和一张回国往返票 </br>
 由于第二次续订的商品才需要付钱，</br>
 所以推荐第一次下单把所有商品都加入购物车 </br>
-等第一单送到后把多余的商品取消, </br>
+等第一单送到后把多余的商品取消即可, </br>
 下面是莘哥收到的商品，</br>
 ![monbetsu](../tmp/6241551437561.jpg)
 
