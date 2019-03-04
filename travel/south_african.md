@@ -93,4 +93,10 @@
 https://www.google.com/maps/d/edit?mid=1_vX9RlsABLBXHN-KQ8WPe0_PoQREyA1q&ll=-33.875306116697956%2C18.43555260112612&z=11
 
 
+# 其它文章
+[其它游记WIP](../menu.md) </br>
+[点击查看ANA里程攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/ana.md) </br>
+[东京购房攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/ff.md) </br>
+[保险攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/hokken.md) </br>
+[职业规划篇](https://github.com/cheungYX/algorithm/blob/master/cheung/work_root.md) </br>
 
