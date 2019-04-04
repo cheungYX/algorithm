@@ -127,3 +127,10 @@
   * 4.我在哪些平台上有展示空间？潜在用户如何能快速找到我？
   * 注意： 你呈现出的东西要有重点、有主线
 
+
+[游记](../menu.md) </br>
+[点击查看ANA里程攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/ana.md) </br>
+[东京购房攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/ff.md) </br>
+[东京购房攻略2⃣️](https://github.com/cheungYX/algorithm/blob/master/cheung/ff2.md) </br>
+[保险攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/hokken.md) </br>
+[职业规划篇](https://github.com/cheungYX/algorithm/blob/master/cheung/work_root.md) </br>

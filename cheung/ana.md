@@ -213,3 +213,10 @@ metro point交换的每月上限是20000 point </br>
 
 欢迎大家多多交流，多多转发 </br>
 有机会一起旅行 </br>
+
+[游记](../menu.md) </br>
+[点击查看ANA里程攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/ana.md) </br>
+[东京购房攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/ff.md) </br>
+[东京购房攻略2⃣️](https://github.com/cheungYX/algorithm/blob/master/cheung/ff2.md) </br>
+[保险攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/hokken.md) </br>
+[职业规划篇](https://github.com/cheungYX/algorithm/blob/master/cheung/work_root.md) </br>

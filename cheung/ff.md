@@ -377,3 +377,11 @@
 * 最低4回現地視察する
 * 契約書はよく読み込む
 * 買った後のメンテナンスローン借り換えも
+
+
+[游记](../menu.md) </br>
+[点击查看ANA里程攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/ana.md) </br>
+[东京购房攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/ff.md) </br>
+[东京购房攻略2⃣️](https://github.com/cheungYX/algorithm/blob/master/cheung/ff2.md) </br>
+[保险攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/hokken.md) </br>
+[职业规划篇](https://github.com/cheungYX/algorithm/blob/master/cheung/work_root.md) </br>
