@@ -1,40 +1,40 @@
-[問題集](https://aws.koiwaclub.com) 有料
-[クラウドサービス活用資料集](https://aws.amazon.com/jp/aws-jp-introduction/)
-[受験記](https://qiita.com/chihiro/items/efad41f83a954f12ec8f)
-[AWS Summit Tokyo 2017 セッション資料・動画一覧](https://aws.amazon.com/jp/summit2017-report/details/)
-[Developers.IOの再入門シリーズ](https://dev.classmethod.jp/series/aws-re-introduction-2018/)
-[要点](https://qiita.com/yutaChaos/items/2b0b8d9bfe76a597953c)
-https://www.certmetrics.com/amazon/default.aspx
-[デザインパータン](http://aws.clouddesignpattern.org/index.php/メインページ)
-[Well-Architected](https://aws.amazon.com/jp/architecture/well-architected/)
-[ナレッジセンター](https://aws.amazon.com/jp/premiumsupport/knowledge-center/)
-[料金計算](http://calculator.s3.amazonaws.com/index.html?lng=ja_JP)
+[問題集](https://aws.koiwaclub.com) 有料</br>
+[クラウドサービス活用資料集](https://aws.amazon.com/jp/aws-jp-introduction/)</br>
+[受験記](https://qiita.com/chihiro/items/efad41f83a954f12ec8f)</br>
+[AWS Summit Tokyo 2017 セッション資料・動画一覧](https://aws.amazon.com/jp/summit2017-report/details/)</br>
+[Developers.IOの再入門シリーズ](https://dev.classmethod.jp/series/aws-re-introduction-2018/)</br>
+[要点](https://qiita.com/yutaChaos/items/2b0b8d9bfe76a597953c)</br>
+https://www.certmetrics.com/amazon/default.aspx</br>
+[デザインパータン](http://aws.clouddesignpattern.org/index.php/メインページ)</br>
+[Well-Architected](https://aws.amazon.com/jp/architecture/well-architected/)</br>
+[ナレッジセンター](https://aws.amazon.com/jp/premiumsupport/knowledge-center/)</br>
+[料金計算](http://calculator.s3.amazonaws.com/index.html?lng=ja_JP)</br>
 
 本
-https://www.amazon.co.jp/dp/4774176737?tag=qiitak-22
-https://www.amazon.co.jp/dp/4822277372
-https://www.udemy.com/aws-certified-solutions-architect-associate/
-https://blog.mmmcorp.co.jp/blog/2018/07/06/how_to_pass_saa/
+https://www.amazon.co.jp/dp/4774176737?tag=qiitak-22</br>
+https://www.amazon.co.jp/dp/4822277372</br>
+https://www.udemy.com/aws-certified-solutions-architect-associate/</br>
+https://blog.mmmcorp.co.jp/blog/2018/07/06/how_to_pass_saa/</br>
 
 参考
-https://snofra.hatenablog.com/entry/2018/07/10/191243
-https://www.slideshare.net/AmazonWebServicesJapan/presentations
-https://qiita.com/yutaChaos/items/2b0b8d9bfe76a597953c
-https://qiita.com/riekure/items/9f178eef397ae12766c1
-https://stay-ko.be
-http://jayendrapatil.com/aws-solution-architect-associate-exam-learning-path/
+https://snofra.hatenablog.com/entry/2018/07/10/191243</br>
+https://www.slideshare.net/AmazonWebServicesJapan/presentations</br>
+https://qiita.com/yutaChaos/items/2b0b8d9bfe76a597953c</br>
+https://qiita.com/riekure/items/9f178eef397ae12766c1</br>
+https://stay-ko.be</br>
+http://jayendrapatil.com/aws-solution-architect-associate-exam-learning-path/</br>
 
 # 範囲
-EC2、ELB、Auto Scaling、
-EBS、S3、RDS、DynamoDB、ElastiCache、
-VPC、Route 53、
-CloudWatch、CloudTrail、CloudFormation、
-IAM、
-SNS/SQS、
+EC2、ELB、Auto Scaling、</br>
+EBS、S3、RDS、DynamoDB、ElastiCache、</br>
+VPC、Route 53、</br>
+CloudWatch、CloudTrail、CloudFormation、</br>
+IAM、</br>
+SNS/SQS、</br>
 
-合格ライン 720 / 1000
-130分
-65問
+合格ライン 720 / 1000</br>
+130分</br>
+65問</br>
 
 * 回復性の高いアーキテクチャを設計する 34% 17問
 * パフォーマンスに優れたアーキテクチャを定義する 24% 12問
@@ -45,18 +45,18 @@ SNS/SQS、
 
 51%
 
-1.0 Designing highly available, cost-efficient, fault-tolerant, scalable systems: 48%
-2.0 Implementation/Deployment: 83%
-3.0 Data Security: 36%
-4.0 Troubleshooting: 75%
+1.0 Designing highly available, cost-efficient, fault-tolerant, scalable systems: 48% </br>
+2.0 Implementation/Deployment: 83%</br>
+3.0 Data Security: 36%</br>
+4.0 Troubleshooting: 75%</br>
 
 
-% 56 => 72
-1.0 Design Resilient Architectures: 66% 9 => 77%
-2.0 Define Performant Architectures: 57% 7 => 85$
-3.0 Specify Secure Applications and Architectures: 50% 6
-4.0 Design Cost-Optimized Architectures: 0% 2 => 50%
-5.0 Define Operationally-Excellent Architectures: 100% 1
+% 56 => 72 </br>
+1.0 Design Resilient Architectures: 66% 9 => 77% </br>
+2.0 Define Performant Architectures: 57% 7 => 85$ </br>
+3.0 Specify Secure Applications and Architectures: 50% 6</br>
+4.0 Design Cost-Optimized Architectures: 0% 2 => 50%</br>
+5.0 Define Operationally-Excellent Architectures: 100% 1</br>
 
 
 * AWSアーキテクチャのベストプラクティス
@@ -811,7 +811,7 @@ https://www.slideshare.net/AmazonWebServicesJapan/aws-black-belt-online-seminar-
 ## CodeDeploy
 EC2にインスール
 デプロイメントグループで環境指定
-
+```
 $ sudo yum update
 $ sudo yum install ruby
 $ sudo yum install aws-cli
@@ -824,6 +824,7 @@ $ sudo ./install auto
 インストールの確認
 
 $ sudo service codedeploy-agent status
+```
 
 appspec.yml
 | 項目                    | 	説明                                                                 	| 例               |
