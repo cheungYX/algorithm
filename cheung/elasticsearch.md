@@ -151,6 +151,37 @@ bin/kibana-plugin list
   {"index" : "kibana_sample_data_flights"}
   {"query" : {"match_all" : {}},"size":2}
   ```
+## 倒排索引
+* 单词词典(Tern Dictionary)
+  - 记录单词与倒排列表的关系
+  - B+ or 哈希来实现
+* 倒排列表(Posting List)
+  - 文档ID
+  - 词频TF
+  - 位置(Position): 文档中的分词位置,用于语句搜索(phrase query)
+  - 偏移(offset): 高亮显示
+
+## Analyzer进行分词
+* 把全文本转换成一系列单词(Term/token)的过程
+* CharacterFilters(原始文本处理) => Tokenizer(按规则切分单词) => TokenFilters(单词加工,小写同意词等)
+* Simple Analyzer
+  – 按照非字母切分（符号被过滤），小写处理
+* Stop Analyzer
+  – 小写处理，停用词过滤（the，a，is）
+* Whitespace Analyzer
+  – 按照空格切分，不转小写
+* Keyword Analyzer 
+  – 不分词，直接将输入当作输出
+* icu_analyzer(亚洲文字)
+* 中文分词
+  - IKAnalyzer
+  - 
+* Language
+  – 提供了30多种常见语言的分词器 
+```
+Get /_analyze
+curl -XGET 'localhost:9200/_analyze?analyzer=jp_search_analyzer' -d '5ヶ月'
+```
 
 # config
 ```
