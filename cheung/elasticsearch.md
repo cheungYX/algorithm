@@ -182,6 +182,269 @@ bin/kibana-plugin list
 Get /_analyze
 curl -XGET 'localhost:9200/_analyze?analyzer=jp_search_analyzer' -d '5ヶ月'
 ```
+# Search API
+* 指定索引
+  ```
+  /_search 集群上所以索引
+  /index1/_search
+  /index1,index2/_search
+  /index*/_search
+  ```
+* Response
+  - took: 整个搜索请求耗费了多少毫秒
+  - total: 符合条件的总文档数
+  - hits: 结果集，默认为前10个文档
+  - _index, _id, _score, _souce
+
+## URI Search
+```
+curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
+```
+* 泛查询，正对_all,所有字段
+  - GET /index/_search?q=2012 
+* 指定字段
+  - GET /index/_search?q=title:2012&sort=year:desc&from=0&size=10&timeout=1s 
+* Term v.s Phrase
+  - Term: GET /movies/_search?q=title:Beautiful Mind => Beautiful OR Mind
+  - Phrase: GET /movies/_search?q=title:"Beautiful Mind" => Beautiful AND Mind
+* 分组，Bool查询
+  - GET /movies/_search?q=title:(Beautiful Mind)
+* Bool
+  - AND / OR / NOT && / || / ！
+  - + must
+  - - must_not
+  - title:(+matrix -reloaded)
+* Range []闭区间, {}开区间
+  - year:{2019 TO 2018}
+  - year:[* TO 2018]
+* 算数符号
+  - year:>2010
+  - year:(>2010 && <=2018)
+  - year:(+>2010 +<=2018)
+* 通配符查询
+  - title:be*
+* 正则表达
+  - title:[bt]oy 
+* 模糊匹配与近似查询
+  - title:befutifl~1
+  - title:"lord rings"~2
+* [文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.0/search-uri-request.html)
+
+
+## Request Body & Query DSL
+* match 分词查询
+* tern 不分词精确匹配
+  - term主要用于精确匹配哪些值，比如数字，日期，布尔值或 not_analyzed 的字符串
+* paging
+  ```
+  curl -XGET "localhost:9200/index/_search" -H 'Content-Type: application/json' -d'
+  {
+    "from": 10,
+    "size": 30,
+    "query": {
+      "match_all": {}
+    }
+  }'
+  ```
+* sort
+  ```
+  POST kibana_sample_data_ecommerce/_search
+  {
+    "sort":[{"order_date":"desc"}],
+    "query":{
+      "match_all": {}
+    }
+  }
+  ```
+* range
+  - gt :: 大于
+  - gte:: 大于等于
+  - lt :: 小于
+  - lte:: 小于等于
+  ```
+  GET books/_search
+  {
+    "_source": ["title", "publish_time"],
+    "query": {
+      "range": {
+        "publish_time": {
+          "gte": "2016-1-1",
+          "lte": "2016-12-31",
+          "format": "yyyy-MM-dd"
+        }
+      }
+    }
+  }
+  ```
+* source filtering
+  ```
+  POST kibana_sample_data_ecommerce/_search
+  {
+    "_source":["order_date"],
+    "query":{
+      "match_all": {}
+    }
+  }
+  ```
+* 脚本字段
+  ```
+  GET kibana_sample_data_ecommerce/_search
+  {
+    "script_fields": {
+      "new_field": {
+        "script": {
+          "lang": "painless",
+          "source": "doc['order_date'].value+'hello'"
+        }
+      }
+    },
+    "query": {
+      "match_all": {}
+    }
+  }
+  ```
+* match
+  ```
+  POST movies/_search
+  {
+    "query": {
+      "match": {
+        "title": {
+          "query": "last christmas",
+          "operator": "and"
+        }
+      }
+    }
+  }
+  ```
+* match_phrase 自带了 operator 属性的值为 and 的 match
+  ```
+  POST movies/_search
+  {
+    "query": {
+      "match_phrase": {
+        "title":{
+          "query": "one love",
+          "slop": 1
+  
+        }
+      }
+    }
+  }
+  ```
+* perfix
+  ```
+  GET books/_search
+  {
+    "_source": "description", 
+    "query": {
+      "prefix": {
+        "description": "wi"
+      }
+    }
+  }
+  ```
+* [文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.0/search-request-body.html)
+
+## Query String & Simple Query String
+* Query string
+  ```
+  POST users/_search
+  {
+    "query": {
+      "query_string": {
+        "default_field": "name",
+        "query": "Ruan AND Yiming"
+      }
+    }
+  }
+  ```
+* Simple Query String
+  - 类似Query String但是会忽略错误语法
+  - 不支持AND OR NOT
+  - Term之间默认的关系是OR，可以指定Operator
+  - + 替代 AND, | 替代 OR, - 替代 NOT
+  ```
+  POST users/_search
+  {
+    "query": {
+      "simple_query_string": {
+        "query": "Ruan Yiming",
+        "fields": ["name"],
+        "default_operator": "AND"
+      }
+    }
+  }
+  ```
+
+# Mapping
+* 预定义字段的类型以及相关属性 solr schema
+  ```
+  {
+      "mappings": {
+          "my_type": {
+          //true:表示自动识别新字段并创建索引，false:不自动索引新字段，strict:遇到未知字段，抛异常，不能存入
+              "dynamic":      "strict", 
+              
+                //动态模板
+               "dynamic_templates": [
+                      { "stash_template": {
+                        "path_match":  "stash.*",
+                        "mapping": {
+                          "type":           "string",
+                          "index":       "not_analyzed"
+                        }
+                      }}
+                    ],
+              //属性列表
+              "properties": {
+                  //一个strign类型的字段
+                  "title":  { "type": "string"},
+                  
+                  "stash":  {
+                      "type":     "object",
+                      "dynamic":  true 
+                  }
+              }
+          }
+      }
+  }
+  ```
+* 类型
+  - String 
+  - text, keyword
+  - long, integer, short, byte, double, float
+  - date
+  - boolean
+  - binary
+  - object, nested
+  - geo-point, geo-sharp
+  - ip, competion
+* 属性
+  - index_name 
+  - anylyzer
+  - store 显示存储
+  - boost
+  - null_value
+  - include_in_all
+  - format
+
+## Dynamic Mapping
+## 显式Mapping
+
+
+# 监控
+* _cluster/health
+* yellow
+  * 所有的主分片已经分片了，但至少还有一个副本是缺失的。不会有数据丢失，所以搜索结果依然是完整的。不过，你的高可用性在某种程度上被弱化。如果 更多的 分片消失，你就会丢数据了。把 yellow 想象成一个需要及时调查的警告。
+* red
+  * 至少一个主分片（以及它的全部副本）都在缺失中。这意味着你在缺少数据：搜索只能返回部分数据，而分配到这个分片上的写入请求会返回一个异常。 
+* GET _cluster/health?level=indices
+* GET _nodes/stats
+* GET my_index/_stats
+* GET my_index,another_index/_stats 
+* GET _all/_stats 
+* GET /_cat/shards 查看所有分片状态
 
 # config
 ```
