@@ -428,9 +428,220 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
   - null_value
   - include_in_all
   - format
-
+  ```
+  {
+      "mappings": {
+          "my_type": {
+          //true:表示自动识别新字段并创建索引，false:不自动索引新字段，strict:遇到未知字段，抛异常，不能存入
+              "dynamic":      "strict", 
+              
+                //动态模板
+               "dynamic_templates": [
+                      { "stash_template": {
+                        "path_match":  "stash.*",
+                        "mapping": {
+                          "type":           "string",
+                          "index":       "not_analyzed"
+                        }
+                      }}
+                    ],
+              //属性列表
+              "properties": {
+                  //一个strign类型的字段
+                  "title":  { "type": "string"},
+                  
+                  "stash":  {
+                      "type":     "object",
+                      "dynamic":  true 
+                  }
+              }
+          }
+      }
+  }
+  ```
 ## Dynamic Mapping
+* 在写入文档的时候,如果索引不存在会自动创建索引
+* 无需手动定义Mapping,Elasticsearch会自动根据文档信,推算出字段的类型
+* 但是有时候会推算的不准确,例如地理位置信息
+* 当类型如果设置不对时,会导致一些功能无法正常运行,例如Range查询
+* 后期修改Mapping的字段类型
+  - 新增字段
+    - Dynamic: true,  一旦有新增字段的文档写入,Mapping也同时被更新
+    - Dynamic: false, Mapping不会被更新,新增字段的数据无法被索引,但是信息会出现在_source中
+    - Dynamic: Strict, 文档写入失败
+  - 对已有字段,一旦已有数据写入,就不再支持修改字段定义
+
 ## 显式Mapping
+* 推荐步骤
+  - 创建一个临时的index,写入一些样本数据
+  - 通过访问Mapping API 获得该文件的动态Mapping定义
+  - 修改后使用该配置创建你的索引
+  - 删除临时索引
+* null_value
+  - 只要keyword类型支持设定null_value
+  ```
+  PUT users
+  {
+      "mappings" : {
+        "properties" : {
+          "firstName" : {
+            "type" : "text"
+          },
+          "lastName" : {
+            "type" : "text"
+          },
+          "mobile" : {
+            "type" : "keyword",
+            "null_value": "NULL"
+          }
+  
+        }
+      }
+  }
+  ```
+* _all在7中被copy_to所替代
+* es中不提供专门的数组类型,但是任何字段,都可以包含多个相同类型的数值
+
+## 多字段特性
+* 实现精确匹配
+  - 增加一个keyword字段
+* 使用不同的analyzer
+  - 不同语言
+  - pinyin 字段的搜索
+  - 还支持为搜索和索引指定不同的analyzer
+* Exact Values(精确值) vs Full Text
+  - Exact Values: keyword
+  - Full Text: text
+* 自定义分词
+  - Character Filter
+    - 增加及替换字符
+    - 可配置多个Character Filter
+    - 会影响Tokenizer的position和offset信息
+    - 自带: HTML strip, Mapping, Pattern replace
+  - Tokenizer
+    - 切词
+    - 可用java开发插件实现自己的Tokenizer
+  - Token Filter
+    - 将Tokenizer输出的词(term)进行增删该
+  ```
+  "jp_search_analyzer" : {
+      "type" : "custom",
+      "tokenizer" : "kuromoji_user_dict",
+      "filter": [ "jp_search_stop_filter", "synonym_series_filter", "jp_synonym_filter", "jp_synonym_search_filter" ],
+      "char_filter": ["jp_mapping", "jp_mapping2", "number_norm"]
+  },
+  "jp_index_analyzer" : {
+      "type" : "custom",
+      "tokenizer" : "kuromoji_user_dict",
+      "filter": [ "jp_search_stop_filter", "synonym_series_filter", "jp_synonym_filter" ],
+      "char_filter": ["jp_mapping", "jp_mapping2", "number_norm", "url_filter", "user_filter"]
+  },
+  ```
+
+## Index Template和 Dynamic Template
+* Index Template
+  - 帮助你设定Mappings和Settings并按照一定的规则自动匹配到新创建的索引之上
+  - 模版仅在一个索引被新创建时,才会产生作用，修改模版不会影响已创建的索引
+  - 可以设定多个索引模版,这些设置会被merge在一起
+  - 可以指定order的数值,控制merging的过程
+  ```
+  PUT /_template/template_test
+  {
+      "index_patterns" : ["test*"],
+      "order" : 1,
+      "settings" : {
+        "number_of_shards": 1,
+          "number_of_replicas" : 2
+      },
+      "mappings" : {
+        "date_detection": false,
+        "numeric_detection": true
+      }
+  }
+  ```
+* Index Template工作方式
+  - 应用Elasticsearch默认的setting和mapping
+  - 应用order数值低的Index Template中的设定
+  - 应用order数值高的Index Template中的设定
+  - 应用创建索引时,用户所指定的settings和mappings,并覆盖之前模版中的设定
+* Dynamic Template
+  - 根据Elasticsearch识别的数据类型,结合字段名称,来动态设定字段类型
+  - 所有的字符串类型都设定成keyword,或者关闭keyword字段
+  - is开头的字段都设置成boolean
+  - long_开头的都设置成long类型
+  ```
+  {
+    "mappings": {
+      "dynamic_templates": [
+              {
+          "strings_as_boolean": {
+            "match_mapping_type":   "string",
+            "match":"is*",
+            "mapping": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "strings_as_keywords": {
+            "match_mapping_type":   "string",
+            "mapping": {
+              "type": "keyword"
+            }
+          }
+        }
+      ]
+    }
+  }
+  ```
+* [Index Template文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/indices-templates.html)
+* [Dynamic Template文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/dynamic-mapping.html)
+
+## 聚合分析(Aggregation)
+* 通过聚合,可以得到一个数据的概览
+* 高性能,只需要一条语句就能从Elasticsearch得到分析结果,无需在客户端实现
+* Bucket Aggregation
+  - 一些满足特定条件的文档的集合
+  - Term & Range
+* Metric Aggregation
+  - 一些数学运算，可以多文档字段进行统计分析
+  - 同样也支持在脚本(painless script)产生的结果之上进行计算
+  - 大多数metric是数学计算,仅输出一个值 min / max / sum / avg / cardinality
+  - 部分metric支持输出多个数值 stats / percentiles / percentiles_ranks
+* Pipeline Aggregation
+  - 对其它的聚合结果进行二次聚合
+* Matrix Aggregation
+  - 支持对多个字段的操作并提供一个结果矩阵
+  ```
+  {
+    "size": 0,
+    "aggs":{
+      "flight_dest":{
+        "terms":{
+          "field":"DestCountry"
+        },
+        "aggs":{
+          "avg_price":{
+            "avg":{
+              "field":"AvgTicketPrice"
+            }
+          },
+          "max_price":{
+            "max":{
+              "field":"AvgTicketPrice"
+            }
+          },
+          "min_price":{
+            "min":{
+              "field":"AvgTicketPrice"
+            }
+          }
+        }
+      }
+    }
+  }
+  ```
+* [search-aggregations文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/search-aggregations.html)
 
 
 # 监控
