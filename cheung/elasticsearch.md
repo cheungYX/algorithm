@@ -643,6 +643,147 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
   ```
 * [search-aggregations文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/search-aggregations.html)
 
+# 搜索与分词
+## Term与Full Text
+* Keyword vs Text
+* Term
+  - 表达语意的最小单位
+  - Term Query / Range Query / Exists Query / Prefix Query / Wildcard Query
+  - 对输入不会做分词,会将输入作为一个整体,在倒排索引中查找准确的词项,并进行相关度算分
+  - 可以通过 Constant score将查询换成一个Filtering,避免算分,并利用缓存,提高性能
+  ```
+  POST /products/_search
+  {
+    //"explain": true,
+    "query": {
+      "term": {
+        "productID.keyword": {
+          "value": "XHDK-A-1293-#fJ3"
+        }
+      }
+    }
+  }
+  
+  POST /products/_search
+  {
+    "explain": true,
+    "query": {
+      "constant_score": {
+        "filter": {
+          "term": {
+            "productID.keyword": "XHDK-A-1293-#fJ3"
+          }
+        }
+  
+      }
+    }
+  }
+  ```
+* Full Text
+  - Match Query / Match Phrase Query / Query String Query
+  - 索引和搜索时都会进行分词
+  - 查询会对每个词项逐个进行底层的查询,在将结果进行合并,并为每一个文档生成一个算分
+  - Precision & Recall
+
+## 结构化搜索(Structured search)
+* 指对于结构化数据的搜索
+  - 日期,bool和数字都是结构化的
+  - 文本也可以是结构化的
+  - 对于有精准的格式的结构化数据,我们可以进行逻辑操作,包括比较范围或判定大小
+    - gt 大于
+    - lt 小于
+    - gte 大于等于
+    - lte 小于等于
+  - 结构化的文本可以做精确匹配或部分匹配, Term / Prifix
+  - 结构化结果只有是或否两个值
+  - 处理多值字段，term 查询是包含，而不是等于
+  ```
+  #数字类型 Term
+  POST products/_search
+  {
+    "profile": "true",
+    "explain": true,
+    "query": {
+      "term": {
+        "price": 30
+      }
+    }
+  }
+  
+  #数字类型 terms
+  POST products/_search
+  {
+    "query": {
+      "constant_score": {
+        "filter": {
+          "terms": {
+            "price": [
+              "20",
+              "30"
+            ]
+          }
+        }
+      }
+    }
+  }
+  
+  #数字 Range 查询
+  GET products/_search
+  {
+      "query" : {
+          "constant_score" : {
+              "filter" : {
+                  "range" : {
+                      "price" : {
+                          "gte" : 20,
+                          "lte"  : 30
+                      }
+                  }
+              }
+          }
+      }
+  }
+  
+  # 日期 range
+  POST products/_search
+  {
+      "query" : {
+          "constant_score" : {
+              "filter" : {
+                  "range" : {
+                      "date" : {
+                        "gte" : "now-1y"
+                      }
+                  }
+              }
+          }
+      }
+  }
+  #exists查询
+  POST products/_search
+  {
+    "query": {
+      "constant_score": {
+        "filter": {
+          "exists": {
+            "field": "date"
+          }
+        }
+      }
+    }
+  }
+  ```
+## 搜索的相关性算分
+* 相关性 Relevance
+  - TF-IDF, BM 25
+* 词频 Term Frequency
+* 逆文档频率 IDF
+* score(q,d) = coord(q,d) * queryNorm(q) * E(tf(t in d)) * idf(t)2 * boost(t) * norm(t,d))
+* BM 25
+  - 和TF-IDF相比,当TF无限增加时,BM 25算分会趋于一个数值
+* explain API
+  - "explain": true
+* Boosting Relevance
 
 # 监控
 * _cluster/health
