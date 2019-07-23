@@ -773,6 +773,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
     }
   }
   ```
+
 ## 搜索的相关性算分
 * 相关性 Relevance
   - TF-IDF, BM 25
@@ -784,6 +785,82 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
 * explain API
   - "explain": true
 * Boosting Relevance
+
+## Query & Filtering与多字符串多字段查询
+* bool查询
+  - 一个或多个查询字句的组合
+  - must 必须匹配,贡献算分
+  - should 选择性匹配,贡献算分
+  - must_not Filter Context,查询字句,必须不能匹配
+  - filter Filter Context,必须匹配,但是不贡献算分
+  - 同一层级下的竞争字段具有相同的权重
+  - 通过嵌套bool查询可以改变对算分的影响
+```
+{
+  "query": {
+    "bool" : {
+      "must" : {
+        "term" : { "price" : "30" }
+      },
+      "filter": {
+        "term" : { "avaliable" : "true" }
+      },
+      "must_not" : {
+        "range" : {
+          "price" : { "lte" : 10 }
+        }
+      },
+      "should" : [
+        { "term" : { "productID.keyword" : "JODL-X-1937-#pV7" } },
+        { "term" : { "productID.keyword" : "XHDK-A-1293-#fJ3" } }
+      ],
+      "minimum_should_match" :1
+    }
+  }
+}
+```
+## 单字符串多字段查询:Dis Max Query
+* Disjunction Max Query
+  - 将任何与任一查询匹配的文档作为结果返回,采用字段上最匹配的评分最终评分返回
+* tie_breaker调整
+  - 获得最佳匹配语句的评分_score
+  - 将其它匹配语句的评分与tie_breaker调整相乘
+  - 对以上评分求和并规范化
+```
+{
+    "query": {
+        "dis_max": {
+            "queries": [
+                { "match": { "title": "Quick pets" }},
+                { "match": { "body":  "Quick pets" }}
+            ],
+            "tie_breaker": 0.2
+        }
+    }
+}
+```
+
+## Multi Match
+* 最佳字段 Best Fields
+  - 当字段之间相互竞争有相互关联,如title和body,评分来自最匹配字段
+* 多数字段 Most Fields
+  - 处理英文内容时,一种常见的手段是,在主字段抽取词干加入同义词,以匹配更多文档
+  - 相同的文本加入子字段,以提供更加精确的匹配
+* 混合字段 Cross Fields
+  - 对于某些实体,如人名,地址,需要在多个字段中确定信息,每个字段只能作为整体的一部分,希望在任何这些列出的字段中找到尽可能多的词
+```
+{
+  "query": {
+    "multi_match": {
+      "type": "best_fields",
+      "query": "Quick pets",
+      "fields": ["*_title","body"],
+      "tie_breaker": 0.2,
+      "minimum_should_match": "20%"
+    }
+  }
+}
+```
 
 # 监控
 * _cluster/health
