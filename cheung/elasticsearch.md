@@ -819,6 +819,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
   }
 }
 ```
+
 ## 单字符串多字段查询:Dis Max Query
 * Disjunction Max Query
   - 将任何与任一查询匹配的文档作为结果返回,采用字段上最匹配的评分最终评分返回
@@ -861,6 +862,341 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
   }
 }
 ```
+
+## 中文分词
+* 混合语言
+  - 语言识别 => 不同语言不同索引
+* [Elasticsearch IK 分词插件](https://github.com/medcl/elasticsearch-analysis-ik/releases)
+* [Elasticsearch hanlp 分词插件](https://github.com/KennFalcon/elasticsearch-analysis-hanlp)
+* [分词算法综述](https://zhuanlan.zhihu.com/p/50444885)
+* [中科院计算所](NLPIR http://ictclas.nlpir.org/nlpir/)
+* [ansj 分词器](https://github.com/NLPchina/ansj_seg)
+* [哈工大的 LTP](https://github.com/HIT-SCIR/ltp)
+* [清华大学 THULAC](https://github.com/thunlp/THULAC)
+* [斯坦福分词器](https://nlp.stanford.edu/software/segmenter.shtml)
+* [Hanlp 分词器](https://github.com/hankcs/HanLP)
+* [结巴分词](https://github.com/yanyiwu/cppjieba)
+* [KCWS 分词器 (字嵌入 +Bi-LSTM+CRF)](https://github.com/koth/kcws)
+* [ZPar](https://github.com/frcchang/zpar/releases)
+* [IKAnalyzer](https://github.com/wks/ik-analyzer)
+
+## Search template & Index Alias
+* 解耦程序 & 搜索DSL
+  * boost只需要更新template无需修改前端
+  ```
+  POST _scripts/tmdb
+  {
+    "script": {
+      "lang": "mustache",
+      "source": {
+        "_source": [
+          "title","overview"
+        ],
+        "size": 20,
+        "query": {
+          "multi_match": {
+            "query": "{{q}}",
+            "fields": ["title","overview"]
+          }
+        }
+      }
+    }
+  }
+  
+  // 使用template查询
+  POST tmdb/_search/template
+  {
+      "id":"tmdb",
+      "params": {
+          "q": "basketball with cartoon aliens"
+      }
+  }
+  ```
+* Index Alias
+  ```
+  curl -XPOST ’http://localhost:9200/_aliases’ -d ’{
+      "actions" : [
+        { "remove": {"index": "index_v1", "alias": "index" } },
+        { "add" :   {"index": "index_v2", "alias": "index" } }
+  ] }’
+  ```  
+
+## Function Score Query
+* 在查询结束后,对每一个文档进行一系列的重新算分,根据生成的分数进行排序
+* 默认记分值函数
+  - Weight: 为每一个文档设置一个简单而不被规范化的权重
+  - Field Value Factor: 使用该数值来修改_score, 例如将"热度"和"点赞数"作为算分的参考因素
+  - Random Score: 为每一个用户使用一个不同的,随机算分结果
+  - 衰减函数: 以某个字段的值为标准,距离某个值越近,得分约高
+  - Script Score: 自定义脚本完全控制所有逻辑
+* modifier: log1p 平滑度处理
+* Boost Mode
+  - Multiply: 算分与函数值的乘积
+  - Sum: 算分与函数的和
+  - Min / Max: 算分与函数去 最大/最小
+  - Replace: 使用函数值取代算分
+* 随机函数
+  - 场景: 网站的广告需要提高展现率
+  - 不同用户看到不同的排名,但是同一个用户访问时结国相对一致
+  - seed值一致返回结果就一致
+```
+POST /blogs/_search
+{
+  "query": {
+    "function_score": {
+      "query": {
+        "multi_match": {
+          "query":    "popularity",
+          "fields": [ "title", "content" ]
+        }
+      },
+      "field_value_factor": {
+        "field": "votes",
+        "modifier": "log1p" ,
+        "factor": 0.1
+      },
+      "boost_mode": "sum",
+      "max_boost": 3
+    }
+  }
+}
+
+POST /blogs/_search
+{
+  "query": {
+    "function_score": {
+      "random_score": {
+        "seed": 911119
+      }
+    }
+  }
+}
+```
+
+## Term & Phrase Suggest
+* 搜索建议: Suggest API
+* 原理: 将输入的文本分解为Token, 然后在索引的字典里查找相似的Term并返回
+* Term
+  - Suggestion Mode
+    - Missing 索引中已经存在就不提供意见
+    - Popular 推荐出现频率更高的词
+    - Always 无论是否存在都提供建议
+  ```
+  POST /articles/_search
+  {
+  
+    "suggest": {
+      "term-suggestion": {
+        "text": "lucen rock",
+        "term": {
+          "suggest_mode": "always",
+          "field": "body",
+        }
+      }
+    }
+  }
+  ```
+* Phrase Suggester
+  - Suggest Mode
+  - Max Errors: 最多可拼错的Terms数
+  - Confidence: 限制返回结果数,默认 1
+  ```
+  POST /articles/_search
+  {
+    "suggest": {
+      "my-suggestion": {
+        "text": "lucne and elasticsear rock hello world ",
+        "phrase": {
+          "field": "body",
+          "max_errors":2,
+          "confidence":0,
+          "direct_generator":[{
+            "field":"body",
+            "suggest_mode":"always"
+          }],
+          "highlight": {
+            "pre_tag": "<em>",
+            "post_tag": "</em>"
+          }
+        }
+      }
+    }
+  }
+  ```
+
+## 自动补全与上下文提示
+* Completion Suggester
+* 对性能要求比较苛刻
+* 原理: 将Analyze的数据编码成FST和索引一起存放,FST会被ES加载进内存
+* FST只能用于前缀查找
+* 必要步骤
+  - Mapping 定义type: completion
+  ```
+  PUT articles
+  {
+    "mappings": {
+      "properties": {
+        "title_completion":{
+          "type": "completion"
+        }
+      }
+    }
+  }
+  // 查询
+  POST articles/_search?pretty
+  {
+    "size": 0,
+    "suggest": {
+      "article-suggester": {
+        "prefix": "elk ",
+        "completion": {
+          "field": "title_completion"
+        }
+      }
+    }
+  }
+  ```
+* Context Suggester
+  - completion suggester 的扩展
+  - 可以在搜索中加入更多上下文信息
+  - 不同的category给予不同的suggester
+  ```
+  PUT comments/_mapping
+  {
+    "properties": {
+      "comment_autocomplete":{
+        "type": "completion",
+        "contexts":[{
+          "type":"category",
+          "name":"comment_category"
+        }]
+      }
+    }
+  }
+  
+  POST comments/_doc
+  {
+    "comment":"I love the star war movies",
+    "comment_autocomplete":{
+      "input":["star wars"],
+      "contexts":{
+        "comment_category":"movies"
+      }
+    }
+  }
+  
+  POST comments/_doc
+  {
+    "comment":"Where can I find a Starbucks",
+    "comment_autocomplete":{
+      "input":["starbucks"],
+      "contexts":{
+        "comment_category":"coffee"
+      }
+    }
+  }
+  
+  
+  POST comments/_search
+  {
+    "suggest": {
+      "MY_SUGGESTION": {
+        "prefix": "sta",
+        "completion":{
+          "field":"comment_autocomplete",
+          "contexts":{
+            "comment_category":"coffee"
+          }
+        }
+      }
+    }
+  }  
+  ```
+* 精准度
+  - Completion > Phrase > Term
+* 照会率
+  - Term > Phrase > Completion
+* 性能
+  - Completion > Phrase > Term
+
+# 分布式特性以及分布式搜索的机制
+## 配置跨集群搜索
+* 水平扩展的痛点
+  - 单集群
+    - 水平扩展时,节点数不能无限增加
+    - 单集群的meta信息(节点,索引,集群状态)过多,会导致更新压力变大,单个Active Master会成为性能瓶颈,导致整个集群无法工作
+  - 早期版本
+    - 通过Tribe Node可以实现多集群访问的需求,但存在一定的问题
+    - Tribe Node会以 Client Node的方式加入每个集群,集群中Master节点的任务更需要Tribe Node的回应才能继续
+    - Tribe Node不保存 Cluster State信息,一旦重启,初始化很慢
+    - 当多个集群存在索引重名的情况时,只能设置一种Prefer规则
+* 跨集群搜索Cross Cluster Search
+  - Tribe Node已被Deprecated
+  - 允许任何节点扮演federated节点,以轻量方式,将搜索请求进行代理
+  - 不需要以client Node的形式加入其它集群
+  ```
+  curl -XPUT "http://localhost:9200/_cluster/settings" -H 'Content-Type: application/json' -d'
+  {"persistent":{"cluster":{"remote":{"cluster0":{"seeds":["127.0.0.1:9300"],"transport.ping_schedule":"30s"},"cluster1":{"seeds":["127.0.0.1:9301"],"transport.compress":true,"skip_unavailable":true},"cluster2":{"seeds":["127.0.0.1:9302"]}}}}}'
+  
+  curl -XPUT "http://localhost:9201/_cluster/settings" -H 'Content-Type: application/json' -d'
+  {"persistent":{"cluster":{"remote":{"cluster0":{"seeds":["127.0.0.1:9300"],"transport.ping_schedule":"30s"},"cluster1":{"seeds":["127.0.0.1:9301"],"transport.compress":true,"skip_unavailable":true},"cluster2":{"seeds":["127.0.0.1:9302"]}}}}}'
+
+  curl -XPUT "http://localhost:9202/_cluster/settings" -H 'Content-Type: application/json' -d'
+  {"persistent":{"cluster":{"remote":{"cluster0":{"seeds":["127.0.0.1:9300"],"transport.ping_schedule":"30s"},"cluster1":{"seeds":["127.0.0.1:9301"],"transport.compress":true,"skip_unavailable":true},"cluster2":{"seeds":["127.0.0.1:9302"]}}}}}'
+  ```
+
+## 集群分布式模型
+* 分布式特性
+  - 存储的水平扩容,支持PB级数据
+  - 高可用,部分节点停止服务,整个集群的服务不受影响
+* Elasticsearch 的分布式架构
+  - 不同的集群通过不同的名字来区分,默认名"elasticsearch"
+  - 通过修改配置文件,或者在命令行中 -E cluster.name=hokehoke 进行设定
+* 节点
+  - 本质上是一个JAVA进程
+  - 生产环境一般建议只运行一个实例
+  - 每一个节点都有名字 -E node.name=node1
+  - 每一个节点启动之后,会分配一个UID,保存在data目录下
+* Coordinating Node
+  - 处理请求的节点
+  - 路由请求到正确的节点,例如创建索引的请求,需要路由到Master节点
+  - 所有节点默认都是Coordinating Node
+  - 通过将其他类型设置成False, 使其成为Dedicated Coordinating Node
+* Data Node
+  - 可以保存数据的节点,叫做Data Node
+  - 节点启动后,默认就是数据节点,可以设置node.data:false禁止
+  - 职责: 保存分片数据,在数据扩展上起到了至关重要的作用(由Master Node决定如何分片)
+  - 通过增加数据节点可以解决数据水平扩展和解决数据单点问题
+* Master Node
+  - 职责: 处理创建,删除索引等请求.决定分片被分配到哪个节点,维护并且更新 Cluster State
+  - Master节点非常重要,在部署上需要考虑解决单点问题
+  - 为一个集群设置多个Master节点,每个节点只承担Master的单一角色
+  - 一个集群,支持配置多个Master Eligible节点,这些节点可以在必要时参与主流程,成为Master节点
+  - 每个节点启动后默认就是一个Master Eligible节点
+  - 可以设置 node.master: false禁止
+  - 集群内第一个Master Eligible节点启动时候,它会将自己选举成Master节点
+* 集群状态
+  - 集群状态信息(Cluster State)维护了一个集群中必要的信息
+    - 所有节点的信息
+    - 所有的索引和其相关的 Mapping与 Setting信息
+    - 分片的路由信息
+  - 每个节点上都保存了集群的状态信息
+  - 但是只有Master节点才能修改集群的状态信息,并负责同步给其他节点
+* Master Eligible Nodes 选主过程
+  - 相互Ping对方,Node id 低的会成为被选举的节点
+  - 其他节点会加入集群,但是不承担Master节点的角色,一旦发现被选中的主节点丢失,就会选出新的Master节点
+* 脑裂问题
+  - Quorum = (Master 数 / 2) + 1
+  - 当3个 Master Eligible时,设置 discovery.zen.minimum_maser_nodes = 2
+  - 7.0以后不需要设置
+
+## 分片与集群的故障转移
+## 文档分布式存储
+## 分片及其生命周期
+## 剖析分布式查询及相关性算分
+## 排序及Doc Values&Fielddata
+## 分页与遍历：From, Size, Search After & Scroll API
+## 处理并发读写操作
 
 # 监控
 * _cluster/health
