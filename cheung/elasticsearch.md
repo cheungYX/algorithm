@@ -869,7 +869,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
 * [Elasticsearch IK 分词插件](https://github.com/medcl/elasticsearch-analysis-ik/releases)
 * [Elasticsearch hanlp 分词插件](https://github.com/KennFalcon/elasticsearch-analysis-hanlp)
 * [分词算法综述](https://zhuanlan.zhihu.com/p/50444885)
-* [中科院计算所](NLPIR http://ictclas.nlpir.org/nlpir/)
+* [中科院计算所](http://ictclas.nlpir.org/nlpir/)
 * [ansj 分词器](https://github.com/NLPchina/ansj_seg)
 * [哈工大的 LTP](https://github.com/HIT-SCIR/ltp)
 * [清华大学 THULAC](https://github.com/thunlp/THULAC)
@@ -1191,12 +1191,185 @@ POST /blogs/_search
   - 7.0以后不需要设置
 
 ## 分片与集群的故障转移
+* 分片是Elasticsearch分布式存储的基石
+* 通过主分片,将数据分布在所有节点上
+* 主分片在创建时指定,后续默认不能修改,如要修改需要重新创建索引
+* Replica Shard: 数据可用性
+  - 一旦主分片丢失, 副本分片可以Promote成主分片
+  - 可以动态调整, 每个节点上都有完备的数据
+  - 可以通过增加副本分片提升系统的读取性能
+* 分片数设定
+  - 主分片数过小: 如果索引增长很快,集群无法通过增加节点实现对这个索引的数据扩展
+  - 主分片数过大: 导致单个shard容量很小,引发单个节点有过多的分片,影响性能
+  - 副本分片过多: 降低集群整体的写入能力
+* health API
+  - Green: 健康状态, 所有主分片和副本分片都能用  
+  - Yellow: 亚健康状态, 所有主分片可用, 部分副本分片不可用
+  - Red: 不健康状态, 部分主分片不可用
+
 ## 文档分布式存储
+* 文档会存储在具体的某个主分片和副本分片上
+* 文档到分片的映射算法shard = hash(_routing) % number_of_primary_shards
+  - Hash算法确保文档会均匀的分布在所用分片上,充分利用硬件资源
+  - 默认的_routing值是文档id
+  - 可以自行设置_routing数值
+  - 这就是primary不能随便修改的原因
+
 ## 分片及其生命周期
+* ES的最小工作单元是分片, 相当与Lucene的index
+* 倒排索引采用Immutable design, 一旦生成不可修改
+  - 无需考虑并发写文件的问题,避免锁带来的性能问题
+  - 有效利用文件系统缓存
+  - 缓存容易生成和维护, 数据可被压缩
+  - 如果需要一个新的文档可被搜索, 需要重建整个索引
+* Lucene index
+  - 单个倒排索引被称为Segment, Segment是自包含不可变的
+  - 多个Segment组成index, 对于ES的shard
+  - 新文档写入时会生成新的Segment，查询时会查询所有Segment并对结果汇总
+  - commit point记录所有Segment信息
+  - 删除文档的信息保存在.del文件中
+* Refresh
+  - 将index buffer写入Segment的操作叫做Refresh，Refresh不执行fsync操作
+  - Refresh频率默认一秒一次,可通过index.refresh_interal配置
+  - Refresh后数据就可以被搜索到了
+  - 系统有大量的数据写入,就会产生很多的Segment
+  - index buffer被占满后时，会触发Refresh，默认是JVM的10%
+* Transaction log
+  - Segment 写入磁盘的过程相对耗时, 借助文件系统缓存, Refresh时先将Segment写入缓存以开放查询
+  - 为了保证数据不丢失, index文档时同时写Transaction log,高版本开始Transaction log默认落盘
+  - 每个分片有一个Transaction log
+  - 在ES Refresh时, index buffer会被清空,Transaction log不会清空
+* Flush
+  - 调用Refresh, index Buffer清空并且Refresh
+  - 调用fsync将缓存Segment写入磁盘
+  - 清空Transaction log
+  - 默认30分钟一次
+  - Transaction log满也会触发(512MB)
+* Merge
+  - Segment文件很多需要被定期合并
+  -  删除.del记录的已被删除文档
+  - ES 和 luence会自动merge
+  - POST my_index/forcemerge
+
 ## 剖析分布式查询及相关性算分
+* ES的搜索分Query 和 Fetch 两阶段
+  - 1. 节点收到请求后会以Coordinating 节点的身份发送查询请求 
+  - 2. 被选中的分片执行查询, 进行排序,然后每个分片都会返回from + size 个排序后的文档id和排序值给Coordinating节点
+  - 3. Coordinating Node 会将Query阶段, 从每个分片获取的排序后的文档id列表进行重新排序
+  - 4. 以mulit get 请求的方式到相应的分片获取详细的文档数据
+* 性能问题
+  - 每个分片上需要查的文档数 = from + size
+  - 最终 Coordinating Node 需要处理: number_of_shard * (from + size)
+  - 深度分页
+* 相关性算分
+  - 每个分片都基于自己的分片上的数据进行相关度计算,因此导致算分偏离
+  - 数据量不大的情况,可将主分片数设为1
+  - 数据量足够大,只要保证文档均匀分散在各个分片上,结果一般不会出现偏差
+  - 使用 DFS Query than Fetch, _search?search_type=dfs_query_than_fetch,消耗cpu和内存,不推荐使用
+
 ## 排序及Doc Values&Fielddata
+* 默认采用相关性算分对结果进行降序排序
+* 可以通过设定sorting参数,自行设定排序
+* 不指定_score, 算分为null
+* text默认不能进行排序, fielddata=true
+* ES的两种排序实现
+  - Field data
+  - Doc Values(列式存储, 对text无效)
+* 关闭Doc Values
+  - 默认启用,可通过Mapping设置关闭
+  - 关闭可增加索引速度，减少磁盘空间
+  - 重新打开需要重建索引
+  - 明确不需要进行排序和聚合分析时推荐关闭
+
+|          |     Doc Values            |    Field data             |
+| -------- | :-------------------------| :------------------------ |
+| 何时创建 | 索引时,和倒排索引一起     | 搜索时动态创建            |
+| 创建位置 | 磁盘文件                  | JVM Heap                  |
+| 优点     | 避免大量内存使用          | 索引速度快,不占用额外磁盘 |
+| 缺点     | 降低索引速度,额外磁盘空间 | 动态开销快占用过多JVMHeap |
+| 缺省值   | ES 2.x 之后               | ES 1.x 及之前             |
+
 ## 分页与遍历：From, Size, Search After & Scroll API
+* 默认情况下,按照相关性算分排序,返回前10条
+* 分布式系统的深度分页问题
+  - From 990, size 10会在每一个分片上都先获取1000个文档然后通过 Coordinating Node 聚合所有结果再排序选取
+  - 页数越深,占用内存越多,为避免过多内存开销,ES默认限定10000个文档
+* Search After
+  - 避免深度分页性能问题,可以实时获取下一页文档信息
+  - 不支持指定页数From,只能往下翻
+  - 进一步搜索需要指定sort,并保证值是唯一的(可以通过加入_id保证唯一性)
+  - sort[ {"age": "desc"}, {"_id": "asc"}]
+  - 然后使用上一次,最后一个文档的sort值进行查询
+  - 原理: 通过唯一排序值定位,将每次要处理的文档数控制在size
+  ```
+  POST users/_search
+  {
+      "size": 1,
+      "query": {
+          "match_all": {}
+      },
+      "search_after":
+          [ 
+            10,
+            "ZQ0vYGsBrR8X3IP75QqX"
+          ],
+      "sort": [
+          {"age": "desc"} ,
+          {"_id": "asc"}    
+      ]
+  }
+  ```
+* Scroll API
+  - 创建一个快照，有新的数据写入后无法被查询到
+  - 每次查询后输入上一次的 Scroll id
+  ```
+  POST /users/_search?scroll=5m
+  {
+      "size": 1,
+      "query": {
+          "match_all" : {
+          }
+      }
+  }
+  
+  
+  POST users/_doc
+  {"name":"user5","age":50}
+  POST /_search/scroll
+  {
+      "scroll" : "1m",
+      "scroll_id" : "DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAAWAWbWdoQXR2d3ZUd2kzSThwVTh4bVE0QQ=="
+  }
+  ```
+* 不同的搜索类型和使用场景
+  - Regular: 需要获取顶部部分文档
+  - Scroll: 需要获取全部文档，例如导出全部数据
+  - Pagination: From和size，如果需要深度分页则使用search_after
+
 ## 处理并发读写操作
+* ES采用乐观并非控制
+  - 假设冲突不会发生
+* ES的文档是不可变的
+  - 如果更新一个文档，就会将该文档标记为删除
+  - 同时增加一个全新的文档，文档的version字段加1
+* 内部版本控制
+  - if_seq_no + if_primary_term
+* 外部版本控制
+  - version + version_type = external
+
+```
+PUT products/_doc/1?if_seq_no=1&if_primary_term=1
+{
+  "title":"iphone",
+  "count":100
+}
+
+PUT products/_doc/1?version=30000&version_type=external
+{
+  "title":"iphone",
+  "count":100
+}
+```
 
 # 监控
 * _cluster/health
