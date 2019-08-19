@@ -1,5 +1,5 @@
 # Elasticsearch 核心技术与实战
-# 概述
+# 0.0 概述
 * Lucene base
 * 高可用 & 水平扩展
 * Hot & Warm构架
@@ -26,7 +26,7 @@
   - beats => redis/kafka/RabbitMQ => logstash => Elasticsearch => kibana/Grafana 
 
 
-# 安装
+# 0.1 安装
 * Elasticsearch
 ```
 //启动单节点
@@ -61,8 +61,8 @@ bin/kibana-plugin list
 * logstash
 
 
-# 基本概念
-## 索引，文档和 REST API
+# 1.0 基本概念
+## 1.1 索引，文档和 REST API
 * 索引/类型/文档(index/type/id)
 * 索引
   - 索引是文档的容器,是一类文档的结合
@@ -77,7 +77,7 @@ bin/kibana-plugin list
   - 每一个文档都有一个Unique ID
   - 文档的元数据
 
-## 节点，集群分片和副本
+## 1.2 节点，集群分片和副本
 * 节点
   - 本质上是一个JAVA进程
   - 生产环境一般建议只运行一个实例
@@ -107,7 +107,7 @@ bin/kibana-plugin list
     - 可动态调整
     - 通过增加副本，一定程度上提高服务的可用性(读取的吞吐)
 
-## 文档的curd
+## 1.3 文档的curd
 | Index  | PUT my_index/_doc/1 {"user":"mike", "comment":"You Konw ..."}     | 
 | ------ |  :--------------------------------------------------------------  |
 | Create | POST my_index/_doc  {"user":"mike", "comment":"You Konw ..."}     |
@@ -151,7 +151,7 @@ bin/kibana-plugin list
   {"index" : "kibana_sample_data_flights"}
   {"query" : {"match_all" : {}},"size":2}
   ```
-## 倒排索引
+## 1.4 倒排索引
 * 单词词典(Tern Dictionary)
   - 记录单词与倒排列表的关系
   - B+ or 哈希来实现
@@ -161,7 +161,7 @@ bin/kibana-plugin list
   - 位置(Position): 文档中的分词位置,用于语句搜索(phrase query)
   - 偏移(offset): 高亮显示
 
-## Analyzer进行分词
+## 1.5 Analyzer进行分词
 * 把全文本转换成一系列单词(Term/token)的过程
 * CharacterFilters(原始文本处理) => Tokenizer(按规则切分单词) => TokenFilters(单词加工,小写同意词等)
 * Simple Analyzer
@@ -182,7 +182,8 @@ bin/kibana-plugin list
 Get /_analyze
 curl -XGET 'localhost:9200/_analyze?analyzer=jp_search_analyzer' -d '5ヶ月'
 ```
-# Search API
+
+# 2.0 Search API
 * 指定索引
   ```
   /_search 集群上所以索引
@@ -196,7 +197,8 @@ curl -XGET 'localhost:9200/_analyze?analyzer=jp_search_analyzer' -d '5ヶ月'
   - hits: 结果集，默认为前10个文档
   - _index, _id, _score, _souce
 
-## URI Search
+
+## 2.1 URI Search
 ```
 curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
 ```
@@ -231,7 +233,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
 * [文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.0/search-uri-request.html)
 
 
-## Request Body & Query DSL
+## 2.2 Request Body & Query DSL
 * match 分词查询
 * tern 不分词精确匹配
   - term主要用于精确匹配哪些值，比如数字，日期，布尔值或 not_analyzed 的字符串
@@ -346,7 +348,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
   ```
 * [文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.0/search-request-body.html)
 
-## Query String & Simple Query String
+## 2.3 Query String & Simple Query String
 * Query string
   ```
   POST users/_search
@@ -377,7 +379,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
   }
   ```
 
-# Mapping
+# 3.0 Mapping
 * 预定义字段的类型以及相关属性 solr schema
   ```
   {
@@ -459,7 +461,8 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
       }
   }
   ```
-## Dynamic Mapping
+
+## 3.1 Dynamic Mapping
 * 在写入文档的时候,如果索引不存在会自动创建索引
 * 无需手动定义Mapping,Elasticsearch会自动根据文档信,推算出字段的类型
 * 但是有时候会推算的不准确,例如地理位置信息
@@ -471,7 +474,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
     - Dynamic: Strict, 文档写入失败
   - 对已有字段,一旦已有数据写入,就不再支持修改字段定义
 
-## 显式Mapping
+## 3.2 显式Mapping
 * 推荐步骤
   - 创建一个临时的index,写入一些样本数据
   - 通过访问Mapping API 获得该文件的动态Mapping定义
@@ -502,7 +505,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
 * _all在7中被copy_to所替代
 * es中不提供专门的数组类型,但是任何字段,都可以包含多个相同类型的数值
 
-## 多字段特性
+## 3.3 多字段特性
 * 实现精确匹配
   - 增加一个keyword字段
 * 使用不同的analyzer
@@ -538,7 +541,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
   },
   ```
 
-## Index Template和 Dynamic Template
+## 3.4 Index Template和 Dynamic Template
 * Index Template
   - 帮助你设定Mappings和Settings并按照一定的规则自动匹配到新创建的索引之上
   - 模版仅在一个索引被新创建时,才会产生作用，修改模版不会影响已创建的索引
@@ -597,7 +600,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
 * [Index Template文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/indices-templates.html)
 * [Dynamic Template文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/dynamic-mapping.html)
 
-## 聚合分析(Aggregation)
+## 3.5 聚合分析(Aggregation)
 * 通过聚合,可以得到一个数据的概览
 * 高性能,只需要一条语句就能从Elasticsearch得到分析结果,无需在客户端实现
 * Bucket Aggregation
@@ -643,8 +646,8 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
   ```
 * [search-aggregations文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/search-aggregations.html)
 
-# 搜索与分词
-## Term与Full Text
+# 4.0 搜索与分词
+## 4.1 Term与Full Text
 * Keyword vs Text
 * Term
   - 表达语意的最小单位
@@ -685,7 +688,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
   - 查询会对每个词项逐个进行底层的查询,在将结果进行合并,并为每一个文档生成一个算分
   - Precision & Recall
 
-## 结构化搜索(Structured search)
+## 4.2 结构化搜索(Structured search)
 * 指对于结构化数据的搜索
   - 日期,bool和数字都是结构化的
   - 文本也可以是结构化的
@@ -774,7 +777,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
   }
   ```
 
-## 搜索的相关性算分
+## 4.3 搜索的相关性算分
 * 相关性 Relevance
   - TF-IDF, BM 25
 * 词频 Term Frequency
@@ -786,7 +789,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
   - "explain": true
 * Boosting Relevance
 
-## Query & Filtering与多字符串多字段查询
+## 4.4 Query & Filtering与多字符串多字段查询
 * bool查询
   - 一个或多个查询字句的组合
   - must 必须匹配,贡献算分
@@ -820,7 +823,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
 }
 ```
 
-## 单字符串多字段查询:Dis Max Query
+## 4.5 单字符串多字段查询:Dis Max Query
 * Disjunction Max Query
   - 将任何与任一查询匹配的文档作为结果返回,采用字段上最匹配的评分最终评分返回
 * tie_breaker调整
@@ -841,7 +844,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
 }
 ```
 
-## Multi Match
+## 4.6 Multi Match
 * 最佳字段 Best Fields
   - 当字段之间相互竞争有相互关联,如title和body,评分来自最匹配字段
 * 多数字段 Most Fields
@@ -863,7 +866,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
 }
 ```
 
-## 中文分词
+## 4.7 中文分词
 * 混合语言
   - 语言识别 => 不同语言不同索引
 * [Elasticsearch IK 分词插件](https://github.com/medcl/elasticsearch-analysis-ik/releases)
@@ -880,7 +883,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
 * [ZPar](https://github.com/frcchang/zpar/releases)
 * [IKAnalyzer](https://github.com/wks/ik-analyzer)
 
-## Search template & Index Alias
+## 4.8 Search template & Index Alias
 * 解耦程序 & 搜索DSL
   * boost只需要更新template无需修改前端
   ```
@@ -921,7 +924,7 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
   ] }’
   ```  
 
-## Function Score Query
+## 4.9 Function Score Query
 * 在查询结束后,对每一个文档进行一系列的重新算分,根据生成的分数进行排序
 * 默认记分值函数
   - Weight: 为每一个文档设置一个简单而不被规范化的权重
@@ -973,7 +976,7 @@ POST /blogs/_search
 }
 ```
 
-## Term & Phrase Suggest
+## 4.10 Term & Phrase Suggest
 * 搜索建议: Suggest API
 * 原理: 将输入的文本分解为Token, 然后在索引的字典里查找相似的Term并返回
 * Term
@@ -1024,7 +1027,7 @@ POST /blogs/_search
   }
   ```
 
-## 自动补全与上下文提示
+## 4.11 自动补全与上下文提示
 * Completion Suggester
 * 对性能要求比较苛刻
 * 原理: 将Analyze的数据编码成FST和索引一起存放,FST会被ES加载进内存
@@ -1119,8 +1122,8 @@ POST /blogs/_search
 * 性能
   - Completion > Phrase > Term
 
-# 分布式特性以及分布式搜索的机制
-## 配置跨集群搜索
+# 5.0 分布式特性以及分布式搜索的机制
+## 5.1 配置跨集群搜索
 * 水平扩展的痛点
   - 单集群
     - 水平扩展时,节点数不能无限增加
@@ -1145,7 +1148,7 @@ POST /blogs/_search
   {"persistent":{"cluster":{"remote":{"cluster0":{"seeds":["127.0.0.1:9300"],"transport.ping_schedule":"30s"},"cluster1":{"seeds":["127.0.0.1:9301"],"transport.compress":true,"skip_unavailable":true},"cluster2":{"seeds":["127.0.0.1:9302"]}}}}}'
   ```
 
-## 集群分布式模型
+## 5.2 集群分布式模型
 * 分布式特性
   - 存储的水平扩容,支持PB级数据
   - 高可用,部分节点停止服务,整个集群的服务不受影响
@@ -1190,7 +1193,7 @@ POST /blogs/_search
   - 当3个 Master Eligible时,设置 discovery.zen.minimum_maser_nodes = 2
   - 7.0以后不需要设置
 
-## 分片与集群的故障转移
+## 5.3 分片与集群的故障转移
 * 分片是Elasticsearch分布式存储的基石
 * 通过主分片,将数据分布在所有节点上
 * 主分片在创建时指定,后续默认不能修改,如要修改需要重新创建索引
@@ -1207,7 +1210,7 @@ POST /blogs/_search
   - Yellow: 亚健康状态, 所有主分片可用, 部分副本分片不可用
   - Red: 不健康状态, 部分主分片不可用
 
-## 文档分布式存储
+## 5.4 文档分布式存储
 * 文档会存储在具体的某个主分片和副本分片上
 * 文档到分片的映射算法shard = hash(_routing) % number_of_primary_shards
   - Hash算法确保文档会均匀的分布在所用分片上,充分利用硬件资源
@@ -1215,7 +1218,7 @@ POST /blogs/_search
   - 可以自行设置_routing数值
   - 这就是primary不能随便修改的原因
 
-## 分片及其生命周期
+## 5.5 分片及其生命周期
 * ES的最小工作单元是分片, 相当与Lucene的index
 * 倒排索引采用Immutable design, 一旦生成不可修改
   - 无需考虑并发写文件的问题,避免锁带来的性能问题
@@ -1251,7 +1254,7 @@ POST /blogs/_search
   - ES 和 luence会自动merge
   - POST my_index/forcemerge
 
-## 剖析分布式查询及相关性算分
+## 5.6 剖析分布式查询及相关性算分
 * ES的搜索分Query 和 Fetch 两阶段
   - 1. 节点收到请求后会以Coordinating 节点的身份发送查询请求 
   - 2. 被选中的分片执行查询, 进行排序,然后每个分片都会返回from + size 个排序后的文档id和排序值给Coordinating节点
@@ -1267,7 +1270,8 @@ POST /blogs/_search
   - 数据量足够大,只要保证文档均匀分散在各个分片上,结果一般不会出现偏差
   - 使用 DFS Query than Fetch, _search?search_type=dfs_query_than_fetch,消耗cpu和内存,不推荐使用
 
-## 排序及Doc Values&Fielddata
+
+## 5.7 排序及Doc Values&Fielddata
 * 默认采用相关性算分对结果进行降序排序
 * 可以通过设定sorting参数,自行设定排序
 * 不指定_score, 算分为null
@@ -1289,7 +1293,7 @@ POST /blogs/_search
 | 缺点     | 降低索引速度,额外磁盘空间 | 动态开销快占用过多JVMHeap |
 | 缺省值   | ES 2.x 之后               | ES 1.x 及之前             |
 
-## 分页与遍历：From, Size, Search After & Scroll API
+## 5.8 分页与遍历：From, Size, Search After & Scroll API
 * 默认情况下,按照相关性算分排序,返回前10条
 * 分布式系统的深度分页问题
   - From 990, size 10会在每一个分片上都先获取1000个文档然后通过 Coordinating Node 聚合所有结果再排序选取
@@ -1346,7 +1350,7 @@ POST /blogs/_search
   - Scroll: 需要获取全部文档，例如导出全部数据
   - Pagination: From和size，如果需要深度分页则使用search_after
 
-## 处理并发读写操作
+## 5.9 处理并发读写操作
 * ES采用乐观并非控制
   - 假设冲突不会发生
 * ES的文档是不可变的
@@ -1370,6 +1374,18 @@ PUT products/_doc/1?version=30000&version_type=external
   "count":100
 }
 ```
+
+# 6.0 聚合分析
+## 6.1 Bucket & Metric
+
+* [Metric](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/search-aggregations-metrics.html)
+* [Bucket](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/search-aggregations-bucket.html)
+
+## 6.2 Pipeline
+## 6.3 作用范围与排序
+## 6.4 原理与精准度问题
+
+# 7.0 数据建模
 
 # 监控
 * _cluster/health
