@@ -1377,15 +1377,177 @@ PUT products/_doc/1?version=30000&version_type=external
 
 # 6.0 聚合分析
 ## 6.1 Bucket & Metric
-
+* Aggregation语法
+  - 属于search的一部分,建议size指定为0
+  - 自定义聚合名
+  - 可包含多个同级的聚合查询
+* Metric Aggregation
+  - 单值分析: 只输出一个分析结果, min,max,avg,sum, Cardinality
+  - 多值分析: 输出多个分析结果, stats, extended stats, percentile, percentile rank, top hits
+* Bucket Aggregation
+  - 按照一定的规则,将文档分配到不同的桶中,从而达到分类的目的
+  - Terms, 数字类型的 Range / Data Range / Histogram / Data Histogram
+  - 支持嵌套,在桶里再做分桶
+* Terms Aggregation
+  - 字段需要打开fielddata
+  - keyword默认支持doc_values
+  - Text需要在mapping中enable
 * [Metric](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/search-aggregations-metrics.html)
 * [Bucket](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/search-aggregations-bucket.html)
 
 ## 6.2 Pipeline
+* 支持对聚合分析的结果，再次进行聚合分析
+  - 结果和其他的聚合同级
+  - 通过buckets_path指定路径
+  ```
+  POST employees/_search
+  {
+    "size": 0,
+    "aggs": {
+      "jobs": {
+        "terms": {
+          "field": "job.keyword",
+          "size": 10
+        },
+        "aggs": {
+          "avg_salary": {
+            "avg": {
+              "field": "salary"
+            }
+          }
+        }
+      },
+      "min_salary_by_job":{
+        "min_bucket": {
+          "buckets_path": "jobs>avg_salary"
+        }
+      }
+    }
+  }
+  ```
+* Sibling 结果和现有分析结果同级
+  - Max, Min, Avg & Sum Bucket
+  - Stats, Extended Status BUcket
+  - Percentiles Bucket
+* Parent 结果内嵌到现有的聚合分析结果之中
+  - Derivative (求异)
+  - Cumultive Sum (累计求和)
+  - Moving Function (滑动窗口)
+* [pipeline](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/search-aggregations-pipeline.html)
+
 ## 6.3 作用范围与排序
+* ES聚合分析的默认作用范围是query的查询结果集
+* 同时ES还支持以下方式改变聚合的作用范围
+  - Filter
+  - Post Filter
+  - Global: 忽略query条件而进行aggregation
+* 排序
+  - 指定order, 按照count和key进行排序
+  - 默认情况按照count降序排序
+  - 指定size就能返回相应的桶
+
 ## 6.4 原理与精准度问题
+* 数据量,精准度,实时性只能选2
+* 当数据量变大,分片变多,ES会牺牲一定的精准度来保证实时性
+* Terms Aggregation 的返回值中有两个特殊数值
+  - doc_count_error_upper_bound: 被遗漏的term分桶,包含的文档可能有最大值
+  - sum_other_doc_count: 除了返回结果的term以外,其他term的文档总数
+* 如何解决Terms不准问题
+  - 数据量不大的时候设置Primary shard为1
+  - 在分布式数据上设置shard_size参数提高精确度,但会对系统性能有一定的损耗
+  - shard size = size * 1.5 + 10
+  ```
+  GET my_flights/_search
+  {
+    "size": 0,
+    "aggs": {
+      "weather": {
+        "terms": {
+          "field":"OriginWeather",
+          "size":3,
+          "shard_size":4,
+          "show_term_doc_count_error":true
+        }
+      }
+    }
+  }
+  ```
 
 # 7.0 数据建模
+## 7.1 Nested 对象
+* 关系性数据库的范式化设计(Normalization)
+  - 范式化设计的主要目标是减少不必要的更新
+  - 副作用:慢查询,数据越范式化就需要越多的join
+  - 范式化节约了存储空间，但存储空间越来越便宜
+  - 范式化简化了更新，但数据读取操作可能更慢
+* 反范式化设计 Denormalization
+  - 数据Flattening，不使用关联关系，而是在文档中保存冗余的数据拷贝
+  - 无需jion操作，数据读取性能好
+  - ES通过压缩_source字段，
+
+## 7.2 文档的子父关系 
+## 7.3 Update By Query & Reindex API
+## 7.4 Ingest Pipeline & Painless Script
+## 7.5 数据建模最近实践
+
+# 8.0 数据保护
+## 8.1 集群身份认证与用户鉴权
+* ES在默认安装之后不提供任何形式的安全防护
+* 错误的配置信息导致公网可以访问ES集群
+  - server.host 0.0.0.0
+* 数据安全性的基本需求
+  - 身份认证
+  - 用户鉴权
+  - 传输加密
+  - 日志审计
+* 一些免费的方案
+  - Nginx 反向代理
+  - [Search Guard](https://search-guard.com)
+  - [ReadOnly REST](https://github.com/sscarduzio/elasticsearch-readonlyrest-plugin)
+  - [X-Pack Basic版](https://www.elastic.co/what-is/elastic-stack-security)
+* Authentication 身份认证
+  - 认证体系: 提供用户名和密码, 提供秘匙或kerberos票据
+  - Realms: X-Pack中的认证服务
+    - 内置Realms(免费): File / Native
+    - 外部Realms(收费): LDAP / Active Directory / PKI / SAML / Kerberos
+* RBAC 用户鉴权
+  - Role Based Access Control
+  - User: The authenticated user
+  - Role: A named set of permissions
+  - Permission: A set of one or more privileges against a secured resource
+  - Privilege: A named group of 1 or more actions that user may execute against a secured resource
+* Privilege
+  - Cluster Privilege: all / monitor / manager / manage_index / manage_index_template / manage_rollup
+  - Indices Privilege: all / create_index / delete / delete_index / index / manage / read / write / view_index_metadata
+* 内置用户和角色
+  - elastic / kibana / logstash_system / beats_system / apm_system / Remote_monitoring_user
+* 使用Security API创建用户
+  ```
+  POST /_security/user/jacknich
+  {
+    "password" : "jA&*021",
+    "roles" : [ "admin", "other_role1"],
+    "full_name" : "Jack NIcholson",
+    "email" : "jacknich@xample.com",
+    "metadata" : {
+      "intelligence" : 7
+    }
+  }
+  ```
+* 开启并配置 X-Pack的认证与鉴权
+  ```
+  bin/elasticsearch -E node.name=node0 -E cluster.name=geektime -E path.data=node0_data -E http.port=9200 -E xpack.security.enabled=true
+  
+  #运行密码设定的命令，设置ES内置用户及其初始密码。
+  bin/elasticsearch-setup-passwords interactive
+  
+  # 修改 kibana.yml
+  elasticsearch.username: "kibana"
+  elasticsearch.password: "changeme"
+  
+  #启动。使用用户名，elastic，密码elastic
+  ./bin/kibana
+  ```
 
 # 监控
 * _cluster/health
