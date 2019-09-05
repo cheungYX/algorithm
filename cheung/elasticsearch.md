@@ -1485,7 +1485,111 @@ PUT products/_doc/1?version=30000&version_type=external
   - 无需jion操作，数据读取性能好
   - ES通过压缩_source字段，
 
-## 7.2 文档的子父关系 
+## 7.2 文档的子父关系
+* 对象和Nested对象有局限性
+  - 每次更新需要重新索引整个对象(包括根对象和嵌套对象)
+* ES提供了关系型数据库中join的实现,使用join数据类型实现，可以通过维护Parent / child的关系从而分离两个对象
+  - 父文档和子文档是两个独立的文档
+  - 更新父文档无需重新索引子文档,子文档被添加更新或删除也不会影响到父文档和其他的子文档
+* 父子关系
+  - 设置索引的Mapping
+  - 索引父文档
+  - 索引子文档
+  - 按需查询文档
+```
+# 设定 Parent/Child Mapping
+PUT my_blogs
+{
+  "settings": {
+    "number_of_shards": 2
+  },
+  "mappings": {
+    "properties": {
+      "blog_comments_relation": {
+        "type": "join",
+        "relations": {
+          "blog": "comment"
+        }
+      },
+      "content": {
+        "type": "text"
+      },
+      "title": {
+        "type": "keyword"
+      }
+    }
+  }
+}
+
+#索引父文档
+PUT my_blogs/_doc/blog1
+{
+  "title":"Learning Elasticsearch",
+  "content":"learning ELK @ geektime",
+  "blog_comments_relation":{
+    "name":"blog"
+  }
+}
+
+#索引子文档
+PUT my_blogs/_doc/comment1?routing=blog1
+{
+  "comment":"I am learning ELK",
+  "username":"Jack",
+  "blog_comments_relation":{
+    "name":"comment",
+    "parent":"blog1"
+  }
+}
+
+# Parent Id 查询
+POST my_blogs/_search
+{
+  "query": {
+    "parent_id": {
+      "type": "comment",
+      "id": "blog2"
+    }
+  }
+}
+
+# Has Child 查询,返回父文档
+POST my_blogs/_search
+{
+  "query": {
+    "has_child": {
+      "type": "comment",
+      "query" : {
+                "match": {
+                    "username" : "Jack"
+                }
+            }
+    }
+  }
+}
+
+# Has Parent 查询，返回相关的子文档
+POST my_blogs/_search
+{
+  "query": {
+    "has_parent": {
+      "parent_type": "blog",
+      "query" : {
+                "match": {
+                    "title" : "Learning Hadoop"
+                }
+            }
+    }
+  }
+}
+```
+
+|          |          Nested Object            |       Parent / Child                |
+| -------- | :---------------------------------| :---------------------------------- |
+| 优点     | 文档存储在一起读取性能高          | 父子文档可以独立更新                |
+| 缺点     | 更新嵌套子文档时,需要更新整个文档 | 需要额外的内存堆维护关系,读取性能差 |
+| 适用场景 | 子文档偶尔更新,以查询为主         | 子文档更新频繁                      |
+
 ## 7.3 Update By Query & Reindex API
 ## 7.4 Ingest Pipeline & Painless Script
 ## 7.5 数据建模最近实践
@@ -1548,6 +1652,81 @@ PUT products/_doc/1?version=30000&version_type=external
   #启动。使用用户名，elastic，密码elastic
   ./bin/kibana
   ```
+
+## 8.2 集群内部安全通信
+* 为什么要加密通讯
+ - 避免被数据抓包,敏感信息泄露
+ - 验证身份,避免 Impostro Node(在网络上起一个节点加入集群,)
+* 为节点创建证书
+ - TLS
+   - TLS协议要求Trusted Certificate Authority(CA)签发的X.509的证书
+ - 证书认证的不同级别
+   - Certificate 节点加入雪瑶使用相同CA签发的证书
+   - Full Verification 节点加入集群需要相同CA签发的证书,还需要验证 Host name或ip
+   - No Verification 任何节点都能加入,开发环境中用于诊断目的
+* [configuring-tls](https://www.elastic.co/guide/en/elasticsearch/reference/current/configuring-tls.html)
+
+```
+# 生成证书
+# 为您的Elasticearch集群创建一个证书颁发机构。例如，使用elasticsearch-certutil ca命令：
+bin/elasticsearch-certutil ca
+
+#为群集中的每个节点生成证书和私钥。例如，使用elasticsearch-certutil cert 命令：
+bin/elasticsearch-certutil cert --ca elastic-stack-ca.p12
+
+#将证书拷贝到 config/certs目录下
+elastic-certificates.p12
+
+bin/elasticsearch -E node.name=node0 -E cluster.name=geektime -E path.data=node0_data -E http.port=9200 -E xpack.security.enabled=true -E xpack.security.transport.ssl.enabled=true -E xpack.security.transport.ssl.verification_mode=certificate -E xpack.security.transport.ssl.keystore.path=certs/elastic-certificates.p12 -E xpack.security.transport.ssl.truststore.path=certs/elastic-certificates.p12
+
+bin/elasticsearch -E node.name=node1 -E cluster.name=geektime -E path.data=node1_data -E http.port=9201 -E xpack.security.enabled=true -E xpack.security.transport.ssl.enabled=true -E xpack.security.transport.ssl.verification_mode=certificate -E xpack.security.transport.ssl.keystore.path=certs/elastic-certificates.p12 -E xpack.security.transport.ssl.truststore.path=certs/elastic-certificates.p12
+
+#不提供证书的节点，无法加入
+bin/elasticsearch -E node.name=node2 -E cluster.name=geektime -E path.data=node2_data -E http.port=9202 -E xpack.security.enabled=true -E xpack.security.transport.ssl.enabled=true -E xpack.security.transport.ssl.verification_mode=certificate
+
+## elasticsearch.yml 配置
+#xpack.security.transport.ssl.enabled: true
+#xpack.security.transport.ssl.verification_mode: certificate
+#xpack.security.transport.ssl.keystore.path: certs/elastic-certificates.p12
+#xpack.security.transport.ssl.truststore.path: certs/elastic-certificates.p12
+```
+
+## 8.3 集群与外部间的安全通信
+* Https的必要性
+ - 浏览器 => Kibana => Elasticsearch => Logstash
+* elasticsearch配置https
+  ```
+  ## elasticsearch.yml 配置
+  xpack.security.http.ssl.enabled: true
+  xpack.security.http.ssl.keystore.path: certs/elastic-certificates.p12
+  xpack.security.http.ssl.truststore.path: certs/elastic-certificates.p12
+  ```
+* Kibana配置https
+  ```
+  # 为kibana生成pem
+  openssl pkcs12 -in elastic-certificates.p12 -cacerts -nokeys -out elastic-ca.pem
+  
+  elasticsearch.hosts: ["https://localhost:9200"]
+  elasticsearch.ssl.certificateAuthorities: [ "/Users/chueng/workspace/kibana-7.1.0/config/certs/elastic-ca.pem" ]
+  elasticsearch.ssl.verificationMode: certificate
+  
+  # 为 Kibna 配置 HTTPS
+  # 生成后解压，包含了instance.crt 和 instance.key
+  bin/elasticsearch-certutil ca --pem
+  
+  server.ssl.enabled: true
+  server.ssl.certificate: config/certs/instance.crt
+  server.ssl.key: config/certs/instance.key
+  ```
+
+# 9.0 水平扩展 Elasticsearch 集群
+## 9.1 常见的集群部署方式
+## 9.2 Hot & Warm 架构与 Shard Filtering
+## 9.3 如何对集群进行容量规划
+## 9.4 分片设计及管理
+## 9.5 在私有云上管理 Elasticsearch 集群的一些方法
+## 9.6 在公有云上管理与部署 Elasticsearch 集群
+
 
 # 监控
 * _cluster/health
