@@ -108,12 +108,12 @@ bin/kibana-plugin list
     - 通过增加副本，一定程度上提高服务的可用性(读取的吞吐)
 
 ## 1.3 文档的curd
-| Index  | PUT my_index/_doc/1 {"user":"mike", "comment":"You Konw ..."}     | 
-| ------ |  :--------------------------------------------------------------  |
-| Create | POST my_index/_doc  {"user":"mike", "comment":"You Konw ..."}     |
-| Read   | Get my_index/_doc/1                                               |   
-| Update | Post my_index/_update/1 {"user":"mike", "comment":"You Konw ..."} |
-| Delete | Delete my_index/_doc/1                                            |
+| Index  | ```PUT my_index/_doc/1 {"user":"mike", "comment":"You Konw ..."}```     | 
+| ------ |  :--------------------------------------------------------------------  |
+| Create | ```POST my_index/_doc  {"user":"mike", "comment":"You Konw ..."}```     |
+| Read   | ```Get my_index/_doc/1```                                               |   
+| Update | ```Post my_index/_update/1 {"user":"mike", "comment":"You Konw ..."}``` |
+| Delete | ```Delete my_index/_doc/1```                                            |
 
 * index: 不存在就索引新文档，存在就更新
 * Bulk
@@ -195,9 +195,7 @@ curl -XGET 'localhost:9200/_analyze?analyzer=jp_search_analyzer' -d '5ヶ月'
   - took: 整个搜索请求耗费了多少毫秒
   - total: 符合条件的总文档数
   - hits: 结果集，默认为前10个文档
-  - _index, _id, _score, _souce
-
-
+  - "_index, _id, _score, _souce"
 ## 2.1 URI Search
 ```
 curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
@@ -228,8 +226,8 @@ curl -XGET "localhost:9200/index/_search?q=field1:hoge&profile=true
 * 正则表达
   - title:[bt]oy 
 * 模糊匹配与近似查询
-  - title:befutifl~1
-  - title:"lord rings"~2
+  - ```title:befutifl~1```
+  - ```title:"lord rings"~2```
 * [文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.0/search-uri-request.html)
 
 
@@ -1268,7 +1266,7 @@ POST /blogs/_search
   - 每个分片都基于自己的分片上的数据进行相关度计算,因此导致算分偏离
   - 数据量不大的情况,可将主分片数设为1
   - 数据量足够大,只要保证文档均匀分散在各个分片上,结果一般不会出现偏差
-  - 使用 DFS Query than Fetch, _search?search_type=dfs_query_than_fetch,消耗cpu和内存,不推荐使用
+  - 使用 DFS Query than Fetch,``` _search?search_type=dfs_query_than_fetch,```消耗cpu和内存,不推荐使用
 
 
 ## 5.7 排序及Doc Values&Fielddata
@@ -1591,7 +1589,125 @@ POST my_blogs/_search
 | 适用场景 | 子文档偶尔更新,以查询为主         | 子文档更新频繁                      |
 
 ## 7.3 Update By Query & Reindex API
+* 需要重建索引的场景
+  - 索引的Mappings发生变更,字段类型更改,分词器及字典更新
+  - 索引的Settings发生变更,索引的主分片数发生变更
+  - 集群内,集群间需要做数据迁移
+* Elasticsearch提供的内置API
+  - Update By Query 在现有索引上重建
+    - [update-by-query](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/docs-update-by-query.html)
+  - Reindex 在其它索引上重建索引
+   - [reindex](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/docs-reindex.html)
+   - 需要实现创建好索引Mappings
+   - "op_type": "create", 只会创建不存在的文档
+   - 异步操作 _reindex?wait_for_completion=false
+  ```
+  # Update所有文档
+  POST blogs/_update_by_query
+  {
+  
+  }
+  
+  # Reindx API
+  POST  _reindex
+  {
+    "source": {
+      "index": "blogs"
+    },
+    "dest": {
+      "index": "blogs_fix"
+      "op_type": "create"
+    }
+  }
+  
+  POST _reindex?wait_for_completion=false
+  GET _tasks?detailed=true&actions=*reindex
+  ```
+* 跨集群Reindex
+  - 需要修改 elasticsearch.yml,并且重启节点
+  - reindex.remote.whitelist: "otherhost:9200, anotherhost:9200"
+  ```
+  POST  _reindex
+  {
+    "source": {
+      "remote": {
+        "host": "http://otherhost:9200"
+      },
+      "index": "source",
+      "size": 100,
+      "query": {
+        "match": {
+          "test": "data"
+        }
+      }
+    },
+    "dest": {
+      "index": "dest"
+    }
+  }
+  ```
+
 ## 7.4 Ingest Pipeline & Painless Script
+* Elasticsearch 5.0后, 引入的一种新的节点类型.默认配置下,每个节点都是Ingest Node
+  - 具有预处理数据的能力,可拦截Index或Bulk API的请求
+  - 对数据进行转换,并重新返回给Index或Bulk API
+* 无需Logstash,就可以进行数据的预处理,例如
+  - 为某个字段设置默认值; 重命名某个字段的字段名; 对字段进行Split操作
+  - 支持设置Painless脚本,对数据进行更加复杂的加工
+* Pipeline & Processor
+  - Pipeline: 管道会对通过的数据(文档)按照顺序进行加工
+  - Pipeline就是一组Prossor
+  - Processor: Elasticsearch对一些加工的行为进行了抽象包装
+  - Elasticsearch有很多内置的Processors，也支持通过插件的方式实现自己的Prossor
+* Simulate API 模拟 Pipeline
+```
+# 为ES添加一个 Pipeline
+PUT _ingest/pipeline/blog_pipeline
+{
+  "description": "a blog pipeline",
+  "processors": [
+      {
+        "split": {
+          "field": "tags",
+          "separator": ","
+        }
+      },
+
+      {
+        "set":{
+          "field": "views",
+          "value": 0
+        }
+      }
+    ]
+}
+
+#查看Pipleline
+GET _ingest/pipeline/blog_pipeline
+
+#测试pipeline
+POST _ingest/pipeline/blog_pipeline/_simulate
+{
+  "docs": [
+    {
+      "_source": {
+        "title": "Introducing cloud computering",
+        "tags": "openstack,k8s",
+        "content": "You konw, for cloud"
+      }
+    }
+  ]
+}
+
+#使用pipeline更新数据
+PUT tech_blogs/_doc/2?pipeline=blog_pipeline
+{
+  "title": "Introducing cloud computering",
+  "tags": "openstack,k8s",
+  "content": "You konw, for cloud"
+}
+```
+
 ## 7.5 数据建模最近实践
 
 # 8.0 数据保护
@@ -1739,7 +1855,8 @@ bin/elasticsearch -E node.name=node2 -E cluster.name=geektime -E path.data=node2
 * GET my_index/_stats
 * GET my_index,another_index/_stats 
 * GET _all/_stats 
-* GET /_cat/shards 查看所有分片状态
+* ```GET /_cat/shards 查看所有分片状态```
+
 
 # config
 ```
