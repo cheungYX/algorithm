@@ -1708,7 +1708,95 @@ PUT tech_blogs/_doc/2?pipeline=blog_pipeline
 }
 ```
 
-## 7.5 数据建模最近实践
+## 7.5 数据建模
+* 数据建模的三个过程: 概念模型 => 逻辑模型 => 数据模型(第三范式)
+  - 数据模型: 结合具体的数据库,在满足业务读写性能等需求的前提下,确定最终的定义
+* 数据建模: 功能需求 + 性能需求
+* 字段类型 => 是否要搜索及分词 => 是否要聚合及排序 => 是否要额外的存储
+* 字段类型: Text v.s keyword
+  - Text
+    - 用于全文本字段, 文本会被Analyzer分词
+    - 默认不支持聚合分析及排序，需要设置fielddata为true
+  - Keyword
+    - 用于id, 枚举及不需要分词的文本，例如电话号码,email,手机号码等
+    - 适用于Filter, Sorting 和 Aggregations
+  - 多字段
+    - 默认文本类型设置成text，并且设置一个keyword的子字段
+    - 在处理人类语言时，通过增加"英文","拼音"和"标准",提高搜索结构
+* 字段类型: 结构化数据
+  - 数值类型
+    - 尽量选择贴近的类型,例如可以用byte,就不用long
+  - 枚举类型
+    - 设置为keyword,即便是数字也应设置成keyword，获取更好的性能
+  - 其他
+    - 日期/布尔/地理信息
+* 搜索
+  - 如果不需要检索，排序和聚合分析
+    - Enable 设置成 false
+  - 如果不需要检索
+    - Index 设置成 false
+  - 对需要检索的字段，可以通过如下配置，设定存储粒度
+    - Index options / Norms : 不需要归一化数据时，可以关闭
+* 聚合及排序
+  - 如不需要检索，排序和聚合分析
+    - Enable 设置成 false
+  - 如果不需要排序或者聚合分析功能
+    - Doc_values / fielddata 设置成 false
+  - 更新频繁，聚合查询频繁的keyword类型的字段
+    - 推荐将 eager_global_ordinals设置为true
+* 额外的存储
+  - 是否需要专门存储当前字段数据
+    - Store 设置为 true, 可以存储该字段的原始内容
+    - 一般结合 _source 为 false 时候使用
+  - Disable _source: 节约磁盘，适用于指标类型数据
+    - 一般建议先考虑增加压缩比
+    - 无法看到 _source字段, 无法做 reindex, 无法做Update
+    - 不推荐
+  - 大内容高亮需求
+    - 关闭 _source
+    - 然后将每个字段的 "store" 设置为 true
+    - 对于需要显示的信息，可以在查询中指定"stored_fields"
+  ```
+  #搜索，通过store 字段显示数据，同时高亮显示 conent的内容
+  POST books/_search
+  {
+    "stored_fields": ["title","author","public_date"],
+    "query": {
+      "match": {
+        "content": "searching"
+      }
+    },
+  
+    "highlight": {
+      "fields": {
+        "content":{}
+      }
+    }
+  }
+  ```
+* [Mapping parameters](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-params.html)
+
+## 7.6 数据建模最佳实践
+* (1)如何处理关联关系
+  - 优先考虑 Denormalization => Object
+  - 当数据包含多数值对象(多个成员)，同时有查询需求 => Nested
+  - 关联文档更新非常频繁时 => Child / Parent
+  - Kibaba 目前暂时不支持 nested 类型和 parent / child 类型
+* (2)一个文档中，最好避免大量的字段
+  - 过多的字段数不容易维护
+  - Mapping 信息保存在CLuster State中，数据量过大对集群性能会有影响
+  - 删除或者修改数据需要reindex
+  - 默认最大字段数是1000，可以设置index.mapping.tatal_fields.limt限定最大字段数
+  - Dynamic schema会不断增加字段，生产环境中尽量不要开, Strict可控制字段级别
+* (3)避免正则查询
+  - 正则，通配符查询，前缀查询属于Term查询，但是性能不够好
+  - 特别是将通配符放在开头，会导致性能的灾难
+  - 将字符转换为对象来解决
+* (4)避免空值查询引起的聚合不准
+  - 使用 Null_Value
+* (5)为索引的Mapping加入Meta信息
+  - Mappings 设置是一个迭代的过程,可以上传git进行管理
+  - ```"_meta": { "software_version_mapping": "1.0" }```
 
 # 8.0 数据保护
 ## 8.1 集群身份认证与用户鉴权
