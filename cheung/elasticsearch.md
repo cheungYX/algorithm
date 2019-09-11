@@ -1925,12 +1925,91 @@ bin/elasticsearch -E node.name=node2 -E cluster.name=geektime -E path.data=node2
 
 # 9.0 水平扩展 Elasticsearch 集群
 ## 9.1 常见的集群部署方式
+* 节点类型
+  - 不不同⻆角⾊色的节点
+    - Master eligible / Data / Ingest / Coordinating / Machine Learning
+  - 在开发环境中，一个节点可承担多种⻆角⾊色
+  - 在⽣生产环境中
+    - 根据数据量量，写⼊入和查询的吞吐量量，选择合适的部署⽅方式
+    - 建议设置单一⻆角⾊色的节点(dedicated node)
+* 节点参数配置
+
+|  节点类型         |   配置参数  |      默认值                   |
+| ----------------- | :-----------| :---------------------------- |
+| maste eligible    | node.master | true                          |
+| data              | node.data   | true                          |
+| ingest            | node.ingest | true                          |
+| coordinating only | 无          | 设置上⾯面三个参数全部为false |
+| machine learning  | node.ml     | true (需要enable x-pack)      |
+
+* 单一⻆角⾊色:职责分离的好处
+  - Dedicated master eligible nodes:负责集群状态(cluster state)的管理理 
+    - 使⽤用低配置的 CPU，RAM 和磁盘
+  - Dedicated data nodes:负责数据存储及处理理客户端请求
+    - 使⽤用⾼高配置的 CPU, RAM 和磁盘 
+  - Dedicated ingest nodes:负责数据处理理
+    - 使⽤用⾼高配置 CPU;中等配置的RAM; 低配置的磁盘 
+* Dedicate Coordinating Only Node (Client Node)
+  - 配置:将 Master，Data，Ingest 都配置成 False
+    - Medium/High CUP;Medium/High RAM;Low Disk
+  - ⽣生产环境中，建议为⼀一些⼤大的集群配置 Coordinating Only Nodes
+    - 扮演 Load Balancers。降低 Master 和 Data Nodes 的负载
+    - 负责搜索结果的 Gather/Reduce
+    - 有时候⽆无法预知客户端会发送怎么样的请求,⼤大量量占⽤用内存的结合操作,一个深度聚合可能会引发OOM
+* Dedicate Master Node
+  - 从⾼高可⽤用 & 避免脑裂的⻆角度出发
+    - 一般在⽣生产环境中配置 3 台
+    - 一个集群只有 1 台活跃的主节点,负责分⽚片管理理,索引创建,集群管理理等操作
+  - 如果和数据节点或者 Coordinate 节点混合部署
+    - 数据节点相对有⽐比较⼤大的内存占⽤用
+    - Coordinate 节点有时候可能会有开销很⾼高的查询，导致 OOM
+    - 这些都有可能影响 Master 节点，导致集群的不不稳定
+* 基本部署:增加节点，⽔水平扩展
+  - 当磁盘容量量⽆无法满⾜足需求时，可以增加数据节点; 磁盘读写压⼒力力⼤大时，增加数据节点
+  - ![monbetsu](../tmp/150847.jpg)
+* ⽔水平扩展:Coordinating Only Node
+  - 当系统中有⼤大量量的复杂查询及聚合时候，增加 Coordinating 节点，增加查询的性能
+  - ![monbetsu](../tmp/150835.jpg)
+* 读写分离
+  - ![monbetsu](../tmp/150807.jpg)
+* 在集群中部署 Kibana
+  - ![monbetsu](../tmp/150759.jpg)
+* 异地多活的部署
+  - ![monbetsu](../tmp/150740.jpg)
+
 ## 9.2 Hot & Warm 架构与 Shard Filtering
 ## 9.3 如何对集群进行容量规划
 ## 9.4 分片设计及管理
 ## 9.5 在私有云上管理 Elasticsearch 集群的一些方法
-## 9.6 在公有云上管理与部署 Elasticsearch 集群
+* ECE – Elastic Cloud Enterprise
+  - https://www.elastic.co/cn/products/ece
+  - 通过单个控制台，管理理多个集群
+  - ⽀支持不不同⽅方式的集群部署(⽀支持各类部署) / 跨数据中⼼心 / 部署 Anti Affinity
+  - 统⼀一监控所有集群的状态
+* 基于 Kubernetes 的⽅方案 Elastic Cloud on Kubernetes
+  - 基于容器器技术，使⽤用 Operator 模式进 ⾏行行编排管理理
+  - 配置，管理理监控多个集群
+  - ⽀支持 Hot & Warm
+  - 数据快照和恢复
+* 构建⾃自⼰己的管理理系统
+  - 基于虚拟机的编排管理理⽅方式
+    - Puppet Infrastructure (Puppet / Elasticsearch Puppet Module / Foreman)
+    - Workflow based Provision & Management
+  - 基于 Kubernetes 的容器器化编排管理理⽅方式
+    - 基于 Operator 模式
+    - Kubernetes - Customer Resource Definition
+    - [Operator SDK](https://github.com/operator-framework/operator-sdk)
 
+## 9.6 在公有云上管理与部署 Elasticsearch 集群
+* Elastic Cloud
+* AWS
+* AliCloud
+
+# 10.0 生产环境中的集群运维
+## 10.1 生产环境常用配置与上线清单
+## 10.2 监控 Elasticsearch 集群
+## 10.3 诊断集群的潜在问题
+## 10.4 解决集群 Yellow 与 Red 的问题
 
 # 监控
 * _cluster/health
