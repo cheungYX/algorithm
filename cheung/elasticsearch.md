@@ -1978,8 +1978,188 @@ bin/elasticsearch -E node.name=node2 -E cluster.name=geektime -E path.data=node2
   - ![monbetsu](../tmp/150740.jpg)
 
 ## 9.2 Hot & Warm 架构与 Shard Filtering
-## 9.3 如何对集群进行容量规划
-## 9.4 分片设计及管理
+* Hot & Warm Architecture
+  - 数据通常不会有Update操作,适用于Time based索引数据(生命周期管理),同时数据量比较大的场景
+  - 引入Warm 节点,低配置大容量的机器存放老数据,以降低部署成本
+* 两类数据节点,不同的硬件配置
+  - Hot节点(通常使用SSD): 索引不断有新文档写入
+  - Warm节点(通常使用HDD)： 索引不存在新数据的写入,同时也不存在大量的数据查询
+* Hot Node
+  - 用于数据写入
+  - Indexing 对CPU和IO都有很高的要求,所以需要使用高配置的机器
+  - 存储的性能要好,建议使用SSD
+* Warm Node
+  - 用于保存只读的索引,比较旧的数据
+  - 通常使用大容量的磁盘(通常是Spinning Disks)
+* 使用 Shard Filtering，步骤分为以下几步
+  - 标记节点(Tagging)
+  - 配置索引到Hot Node
+  - 配置索引到Warm Node
+* 标记节点
+  - 通过"node.attr"来标记一个节点
+  - 节点的attribute可以是任何的 key/value
+  - 可以通过elasticsearch.yml 或者通过 -E 命令指定
+```
+# 标记一个 Hot 节点
+bin/elasticsearch  -E node.name=hotnode -E cluster.name=geektime -E path.data=hot_data -E node.attr.my_node_type=hot
+# 标记一个 warm 节点
+bin/elasticsearch  -E node.name=warmnode -E cluster.name=geektime -E path.data=warm_data -E node.attr.my_node_type=warm
+# 查看节点
+GET /_cat/nodeattrs?v
+
+# 配置到 Hot节点
+PUT logs-2019-06-27
+{
+  "settings":{
+    "number_of_shards":2,
+    "number_of_replicas":0,
+    "index.routing.allocation.require.my_node_type":"hot"
+  }
+}
+
+# 配置到 warm 节点
+PUT PUT logs-2019-06-27/_settings
+{  
+  "index.routing.allocation.require.my_node_type":"warm"
+}
+```
+* Rack Awareness
+  - 通过Rack Awareness的机制就可以尽可能避免将同一个索引的主副分片同时分配在一个机架上
+* Shard Filtering
+  - node.attr 标记节点 
+  - index.routing.allocation 分配到索引节点
+  - Index.routing.allocation.include.{attr} 至少包含一个值
+  - Index.routing.allocation.exclude.{attr} 不能包含任何一个值
+  - Index.routing.allocation.reclude.{attr} 所有值都需要包含
+```
+# 标记一个 rack 1
+bin/elasticsearch  -E node.name=node1 -E cluster.name=geektime -E path.data=node1_data -E node.attr.my_rack_id=rack1
+
+# 标记一个 rack 2
+bin/elasticsearch  -E node.name=node2 -E cluster.name=geektime -E path.data=node2_data -E node.attr.my_rack_id=rack2
+
+PUT _cluster/settings
+{
+  "persistent": {
+    "cluster.routing.allocation.awareness.attributes": "my_rack_id"
+    "cluster.routing.allocation.awareness.force.my_rack_id.values": "rack1,rack2"
+  }
+}
+```
+* [sizing hot warm architectures for logging and metrics in the elasticsearch service on elastic cloud](https://www.elastic.co/cn/blog/sizing-hot-warm-architectures-for-logging-and-metrics-in-the-elasticsearch-service-on-elastic-cloud)
+* [deploying a hot-warm logging cluster on the elasticsearch service](https://www.elastic.co/cn/blog/deploying-a-hot-warm-logging-cluster-on-the-elasticsearch-service)
+
+## 9.3 分片设计及管理
+* 集群增加一个节点后，Elasticsearch 会自动进⾏分⽚的移动，也叫 Shard Rebalancing
+* 当分⽚片数 > 节点数时
+  - 一旦集群中有新的数据节点加入,分片就可以自动进⾏分配
+  - 分⽚片在重新分配时,系统不不会有 downtime
+* 多分⽚片的好处:一个索引如果分布在不不同的节点，多个节点可以并⾏行行执⾏行行
+  - 查询可以并⾏执⾏
+  - 数据写入可以分散到多个机器
+* 分片过多所带来的副作⽤
+  - Shard 是 Elasticsearch 实现集群水平扩展的最⼩单位
+  - 过多设置分片数会带来一些潜在的问题
+  - 每个分⽚是⼀个 Lucene 的 索引，会使⽤机器的资源。过多的分⽚会导致额外的性能开销
+    - Lucene Indices / File descriptors / RAM / CPU
+    - 每次搜索的请求,需要从每个分⽚上获取数据
+    - 分片的 Meta 信息由 Master 节点维护。过多,会增加管理的负担,经验值,控制分⽚总数在10W以内
+* 如何确定主分⽚片数
+  - 从存储的物理角度看
+    - ⽇志类应用，单个分片不要大于 50 GB
+    - 搜索类应用，单个分⽚不要超过20 GB
+  - 为什么要控制分⽚存储⼤⼩
+    - 提⾼ Update 的性能
+    - Merge 时，减少所需的资源
+    - 丢失节点后，具备更快的恢复速度 / 便于分⽚片在集群内 Rebalancing
+* 如何确定副本分片数
+  - 副本是主分片的拷贝
+    - 提⾼系统可用性:相应查询请求，防⽌数据丢失
+    - 需要占用和主分片一样的资源
+  - 对性能的影响
+    - 副本会降低数据的索引速度:有几份副本就会有几倍的 CPU 资源消耗在索引上
+    - 会减缓对主分片的查询压力，但是会消耗同样的内存资源
+    - 如果机器资源充分，提⾼副本数，可以提高整体的查询 QPS
+* 调整分⽚总数设定，避免分配不均衡
+  - ES 的分片策略会尽量保证节点上的分片数大致相同
+  - 扩容的新节点没有数据，导致新索引集中在新的节点
+  - 热点数据过于集中，可能会产⽣新能问题
+  - index.routing.allocation.tatal_shards_per_node
+  - cluster.routing.allocation.tatal_shards_per_node
+
+## 9.4 如何对集群进行容量规划
+* 一个集群总共需要多少个节点? ⼀个索引需要设置几个分⽚片?
+  - 规划上需要保持一定的余量量，当负载出现波动，节点出现丢失时，还能正常运行
+* 做容量规划时，⼀些需要考虑的因素
+  - 机器的软硬件配置
+  - 单条文档的尺⼨ / 文档的总数据量 / 索引的总数据量(Time base 数据保留的时间)/ 副本分片数
+  - ⽂档是如何写入的(Bulk的尺寸)
+  - ⽂档的复杂度，文档是如何进行读取的(怎么样的查询和聚合)
+* 评估业务的性能需求
+  - 数据吞吐及性能需求
+    - 数据写入的吞吐量，每秒要求写入多少数据?
+    - 查询的吞吐量?
+    - 单条查询可接受的最大返回时间?
+  - 了解你的数据
+    - 数据的格式和数据的 Mapping
+    - 实际的查询和聚合长的是什么样的
+* 常见用例
+  - 搜索:固定大小的数据集
+    - 搜索的数据集增长相对比较缓慢
+  - ⽇志:基于时间序列的数据
+    - 使⽤ ES 存放日志与性能指标。数据每天不断写入，增长速度较快
+    - 结合 Warm Node 做数据的老化处理 
+* 硬件配置
+  - 选择合理的硬件，数据节点尽可能使用 SSD
+  - 搜索等性能要求高的场景，建议 SSD
+    - 按照 1 :10 的⽐例配置内存和硬盘
+  - ⽇志类和查询并发低的场景，可以考虑使用机械硬盘存储
+    - 按照 1:50 的比例配置内存和硬盘
+  - 单节点数据建议控制在 2 TB 以内，最⼤不建议超过 5 TB
+  - JVM 配置机器内存的一半，JVM 内存配置不建议超过 32 G
+* 部署方式
+  - 按需选择合理的部署方式
+  - 如果需要考虑可靠性⾼可用，建议部署 3 台 dedicated 的 Master 节点
+  - 如果有复杂的查询和聚合，建议设置 Coordinating 节点
+* 1: 固定⼤小的数据集
+  - 一些案例:唱⽚信息库 / 产品信息
+  - 一些特性
+    - 被搜索的数据集很大，但是增⻓相对比较慢(不会有大量的写入)。更关⼼搜索和聚合的读取性能
+    - 数据的重要性与时间范围无关。关注的是搜索的相关度
+  - 估算索引的的数据量，然后确定分片的大小
+    - 单个分⽚的数据不要超过 20 GB
+    - 可以通过增加副本分片，提高查询的吞吐量
+  - 如果业务上有⼤量的查询是基于⼀个字段进行 Filter，该字段⼜是⼀个数量有限的枚举值,例如订单所在的地区
+  - 如果在单个索引有大量的数据，可以考虑将索引拆分成多个索引
+    - 查询性能可以得到提⾼
+    - 如果要对多个索引进行查询，还是可以在查询中指定多个索引得以实现
+  - 如果业务上有⼤量的查询是基于⼀个字段进行 Filter，该字段数值并不固定
+    - 可以启用 Routing 功能，按照 filter 字段的值分布到集群中不同的 shard，降低查询时相关的 shard，提高 CPU 利用率 
+* 2: 基于时间序列的数据
+  - 相关的用案: ⽇志 / 指标 / 安全相关的 Events / 舆情分析
+  - 一些特性
+    - 每条数据都有时间戳;⽂档基本不会被更新(日志和指标数据)
+    - ⽤户更更多的会查询近期的数据;对旧的数据查询相对较少
+    - 对数据的写⼊性能要求比较⾼
+  - 创建基于时间序列的索引
+    - 创建 time-based 索引
+      - 在索引的名字中增加时间信息
+      - 按照每天/每周/每⽉月的方式进⾏划分
+    - 带来的好处
+      - 更加合理理的组织索引，例如随着时间推移，便于对索引做的⽼化处理
+      - 利用 Hot & Warm Architecture
+      - 备份和删除的效率高。( Delete By Query 执⾏速度慢，底层也不会立刻释放空间,而 Merge 时又很消耗资源)
+  - 写⼊时间序列的数据:基于 Date Math 的方式
+    - 容易使用
+    - 如果时间发⽣变化，需要重新部署代码
+    - ```<logs-{now/d}>, <logs-{now{YYYY .MM}}>, <logs-{now/w}>```
+* 集群扩容
+  - 增加 Coordinating / Ingest Node
+    - 解决 CPU 和 内存开销的问题
+  - 增加数据节点
+    - 解决存储的容量的问题
+    - 为避免分⽚分布不均的问题，要提前监控磁盘空间，提前清理理数据或增加节点(70%) 
+
 ## 9.5 在私有云上管理 Elasticsearch 集群的一些方法
 * ECE – Elastic Cloud Enterprise
   - https://www.elastic.co/cn/products/ece
@@ -2010,6 +2190,12 @@ bin/elasticsearch -E node.name=node2 -E cluster.name=geektime -E path.data=node2
 ## 10.2 监控 Elasticsearch 集群
 ## 10.3 诊断集群的潜在问题
 ## 10.4 解决集群 Yellow 与 Red 的问题
+## 10.5 提升集群写性能
+## 10.6 提升进群读性能
+## 10.7 集群压力测试
+## 10.8 段合并优化及注意事项
+## 10.9 缓存及使用 Breaker 限制内存使用
+## 10.10 一些运维的相关建议
 
 # 监控
 * _cluster/health
