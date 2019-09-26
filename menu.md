@@ -6,6 +6,8 @@
 [冲绳游记2](https://github.com/cheungYX/algorithm/blob/master/travel/okinawa_20190301.md) </br>
 [石垣島游记](https://github.com/cheungYX/algorithm/blob/master/travel/ishigaki_20190405.md) </br>
 [北海道紋別游记](https://github.com/cheungYX/algorithm/blob/master/travel/monbetsu_20190221.md) </br>
+[神津岛潜水](https://github.com/cheungYX/algorithm/blob/master/travel/kozu_20190920.md) </br>
+[台湾垦丁游记]https://github.com/cheungYX/algorithm/blob/master/travel/kending_20190711.md() </br>
 [ANA里程攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/ana.md) </br>
 [东京购房攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/ff.md) </br>
 [保险攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/hokken.md) </br>
