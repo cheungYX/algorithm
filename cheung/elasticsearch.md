@@ -2153,6 +2153,7 @@ PUT _cluster/settings
     - 容易使用
     - 如果时间发⽣变化，需要重新部署代码
     - ```<logs-{now/d}>, <logs-{now{YYYY .MM}}>, <logs-{now/w}>```
+    - 使用index alias
 * 集群扩容
   - 增加 Coordinating / Ingest Node
     - 解决 CPU 和 内存开销的问题
