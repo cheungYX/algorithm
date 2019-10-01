@@ -2198,6 +2198,213 @@ PUT _cluster/settings
 ## 10.9 缓存及使用 Breaker 限制内存使用
 ## 10.10 一些运维的相关建议
 
+# 11.0 索引生命周期管理
+## 11.1 使用 Shrink 与 Rollover API 有效管理时间序列索引
+* 索引管理API
+  - Open / Close Index: 索引关闭后无法进行读写,但是索引数据不会被删除
+  - Shrink Index: 可以将索引的主分片数收缩到较小的值
+  - Split Index: 可以扩大主分片个数
+  - Rollover Index: 类似 Log4J 记录日志的方式,索引尺寸或者时间超过一定值后,创建新的
+  - Rollup Index: 对数据进行处理后,重新写入,减少数据量
+* Open / Close Index
+```
+#关闭索引
+POST /index/_close
+#索引存在
+HEAD index
+# 无法查询
+POST index/_count
+#打开索引
+POST /index/_open
+```
+* Shrink API
+  - ES 5.x 后推出的一个新功能，使用场景
+    - 索引保存的数据量比较小，需要重新设定主分片数
+    - 索引从Hot移动到Warm后，需要降低主分片数
+  - 会使用和源索引相同的配置创建一个新的索引，仅仅降低主分片数
+    - 源分片数必须是目标分片数的倍数，如果源分片数是素数，目标分片数只能为1
+    - 如果文件系统支持硬链接，会将Segment硬链接到目标索引，索引性能好
+  - 完成后，可以删除源索引
+  - 限制
+    - 源分片必须只读
+    - 所有分片必须在同一个节点上
+    - 集群健康状态为Green
+  - [shrink index](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/indices-shrink-index.html)
+```
+POST my_source_index/_shrink/my_target_index
+{
+  "settings": {
+    "index.number_of_replicas": 0,
+    "index.number_of_shards": 2,
+    "index.codec": "best_compression"
+  },
+  "aliases": {
+    "my_search_indices": {}
+  }
+}
+```
+* Split API
+  - 与shrink操作相反
+```
+POST my_source_index/_split/my_target_index
+{
+  "settings": {
+    "index.number_of_shards": 8,
+    "index.number_of_replicas":0
+  }
+}
+```
+* Rollover API
+  - 当满足一系列的条件, Rollover API 支持将一个Alias指向一个新的索引
+    - 存活的时间/最大文档数/最大的文件尺寸
+  - 一般需要和Index Lifecycle Management Policies结合使用
+    - 只有调用 Rollover API时，才会去做相应的检测。ES并不会自动去监控这些索引。
+```
+POST /nginx_logs_write/_rollover
+{
+  "conditions": {
+    "max_age":   "1d",
+    "max_docs":  5,
+    "max_size":  "5gb"
+  }
+}
+```
+
+## 11.2 索引全生命周期管理及工具介绍
+* 时间序列的索引
+  - 索引中的数据随着时间持续不断增长
+  - 按时间序列划分索引的好处和挑战
+    - 好处: 会使得管理更加简单，例如完整删除一个索引，性能比 delete by query 好
+    - 挑战: 如何进行自动化管理，减少人工操作
+      - 从 Hot 转移到 Warm
+      - 定期关闭或删除索引
+* 索引生命周期常见阶段
+  - Hot: 索引还存在着大量的读写操作
+  - Warm: 索引不存在写操作，还有被查询的需要
+  - Cold: 索引不存在写操作，读操作也不多
+  - Delete: 索引不再被需要，可以被安全删除
+* Elasticsearch Curator
+  - https://github.com/elastic/curator
+  - 机遇python的命令行工具
+  - 配置Action
+    - 内置10多种Index相关的操作
+    - 每个动作可顺序执行
+  - Filters
+    - 支持各种条件，过滤出需要被操作的索引
+  - 没有考虑HA相关的功能，需要定期手工操作
+* eBay Lifecycle Management Tool
+  - 支持Curator的功能
+  - 一个界面管理多个ES集群
+  - 支持不同的ES版本
+  - 支持图形化配置
+  - Job定时触发
+  - 系统高可用
+* Index Lifecycle Management
+  - Elasticsearch 6.6 推出的新功能
+  - 基于 X-Pack Basic License 可免费使用
+  - ILM概念: Policy, Phase, Action
+* ILM Policy
+  - 集群中支持定义多个Policy
+  - 每个索引可以使用相同或不同的Policy
+
+# 12.0 用 Logstash 和 Beats 构建数据管道
+## 12.1 Logstash 入门及架构介绍
+* ETL 工具 / 数据搜集处理引擎，支持200多个插件
+* 文件，日志(数据源) => Logstash => Elasticsearch
+* Pipeline
+  - 包含了 input-filter-output 三个阶段的处理流程
+  - 插件生命周期管理
+* Logstash Event
+  - 数据在内部流转的具体表现形式,数据在input阶段被转换为Event, 在 output被转化成目标格式数据
+  - Event 其实是一个java Object，在配置文件中，对Event的属性进行增删改查
+* Logstash 架构简介
+  - Codec (Code / Decode): 将原始数据decode成Event，将Event encode成目标数据
+  - Input(Event) => Filter(Event) => Output
+  - 数据采集: Stdin, JDBC
+  - 数据解析: Mutate => Date => User Agent
+  - 数据输出: Elasticsearch
+* [Input plugins](https://www.elastic.co/guide/en/logstash/master/input-plugins.html)
+  - 一个Pipeline可以有多个Input plugin
+  - Stdin / File
+  - Beats / Log4J / Elasticsearch / JDBC / Kafka / Rabbitmq / Redis
+  - JMX / HTTP / Websocket / UDP / TCP
+  - Google Cloud Storage  / S3
+  - Github / Twitter
+* 将Event 发送到特定的目的地是pipeline的最后一个阶段
+* [Output Plugins](https://www.elastic.co/guide/en/logstash/master/output-plugins.html)
+  - Elasticsearch
+  - Email / Pageduly
+  - Influxdb / kafka / Mongodb / Opentsdb / Zabbix
+  - Http / TCP / Websocket
+* 将原始数据 decode成Event，将Event encode成目标数据
+* [Codec Plugins](https://www.elastic.co/guide/en/logstash/master/codec-plugins.html)
+  - Line / Multiline
+  - JSON / Avro / cef
+  - Dots / Rubydebug
+* [Filter Plugins](https://www.elastic.co/guide/en/logstash/master/filter-plugins.html)
+  - Mutate: 操作Event的字段
+  - Metrics: Aggregate metrics
+  - Ruby: 执行Ruby代码
+* Logstash支持多个input，多个input的时候会用Queue保证重启后消息不会丢失
+* 多Pipelines实例
+  - Pipeline.works: Pipeline线程数，默认是CPU核数
+  - Pipeline.batch.size: Batcher 一次批量获取等待处理的文档数，默认125，需结合 jvm.options调节
+  - Pipeline batch delay: Batcher 等待时间
+```
+- pipeline.id: my-pipeline_1
+  path.config: "/etc/path/to/p1.config"
+  pipeline.workers: 3
+- pipeline.id: my-other-pipeline
+  path.config: "/etc/path/to/p2.config"
+  queue.type: persisted
+```
+* Logstash Queue
+  - In Memory Queue
+    - 进程Crash，机器当机都会引起数据的丢失
+  - Persistent Queue
+    - 机器当机，数据也不会消失，数据保证会被消费，可以替代kafka等消息队列缓冲区对的作用
+    - Queue.type.persisted(默认是memory)
+    - Queue.max_butes: 4gb
+* Codec Plugin - Multiline
+  - 设置参数
+    - Pattern: 设置行匹配的正则表达式
+    - What: 如果匹配成功，那么匹配行属于上一个事件还是下一个事件
+    - Negate true / false: 是否对pattern结果取反
+* Input Plugin - File
+  - 支持从文件中读取数据，如日志文件
+  - 文件读取需要解决的问题
+    - 只被读取一次，重启后需要从上次读取的位置继续(通过sincedb实现) 
+  - 读取到文件新内容，发现新文件
+  - 文件发生归档操作(文档位置发生变化，日志rotation)，不能影响当前的内容读取
+* Filter Plugin
+  - Filter Plugin可以对Logstash Event进行各种处理，例如解析，删除字段，类型转换
+    - Date: 日期解析
+    - Dissect: 分隔符解析
+    - Grok: 正则匹配解析
+    - Mutate: 处理字段，重命名，删除，替换
+    - Ruby: 利用ruby代码来动态修改event
+
+## 12.2 Beats 介绍
+* Light weight data shippers
+  - 以搜集数据为主
+  - 支持与Logstash 或 ES 集成
+* 全品类 / 轻量级 / 开箱即用 / 可插拔 / 可扩展 / 可视化
+
+# 13.0 用 Kibana 进行数据可视化分析
+## 13.1 使用 Index Pattern 配置数据
+## 13.2 使用 Kibana Discover 探索数据
+## 13.3 基本可视化组件介绍
+## 13.4 构建 Dashboard
+
+# 14.0 X-Pack 套件
+## 14.1 用 Monitoring 和 Alerting 监控 Elasticsearch 集群
+## 14.2 用 APM 进行程序性能监控
+## 14.3 用机器学习实现时序数据的异常检测（上）
+## 14.4 用机器学习实现时序数据的异常检测(下）
+## 14.5 用 ELK 进行日志管理
+## 14.6 用 Canvas 做数据演示
+
+# Elastic 认证
 # 监控
 * _cluster/health
 * yellow
