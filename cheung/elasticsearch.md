@@ -2389,6 +2389,30 @@ POST /nginx_logs_write/_rollover
   - 以搜集数据为主
   - 支持与Logstash 或 ES 集成
 * 全品类 / 轻量级 / 开箱即用 / 可插拔 / 可扩展 / 可视化
+* Filebeat / Metricbeat / Packetbeat / Winlogbeat / Auditbeat / Heartbeat / Functionbeat
+* [Metricbeat](https://www.elastic.co/guide/en/beats/metricbeat/7.4/index.html)
+  - 用来定期收集操作系统，软件的指标数据
+    - Metric: 可聚合的数据，定期收集
+    - Logs: 文本数据，随机收集
+  - 指标存储在 Elasticsearch 中，可以通过 Kibana进行实时的数据分析
+  - Module
+    - 收集的指标对象，例如不同的操作系统，不同的数据库，不同的应用系统
+    - 提供了大量开箱即用的Module
+    - 通过执行 metricbeat module list 查看
+    - 通过执行metricbeat module enable module_name 定制
+  - Metricset
+    - 一个Module可以有多个metricset
+    - 具体的指标集合，以减少调用次数为原则进行划分
+    - 不同的metricset可以设置不同的抓取时长
+* Packetbeat
+  - 实时网络数据分析，监控应用服务器之间的网络流量
+    - 常见抓包工具 Tcpdump / wireshark
+    - 常见抓包配置 Pcap 基于 libpcap，跨平台 / Af_packet 仅支持linux，基于内存映射嗅探，高性能
+  - 支持的协议
+    - ICMP / DHCP / DNS / HTTP / Cassandra / Mysql / PostgresSQL / Redis / MongoDB / Memcache / TLS
+  - Network flows: 抓取记录网络流量数据，不涉及协议解析
+
+
 
 # 13.0 用 Kibana 进行数据可视化分析
 ## 13.1 使用 Index Pattern 配置数据
