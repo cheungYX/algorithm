@@ -2188,9 +2188,153 @@ PUT _cluster/settings
 
 # 10.0 生产环境中的集群运维
 ## 10.1 生产环境常用配置与上线清单
+* 从ES5 开始，支持Development 和 Production两种模式
+  - 一个集群在Production Mode时，启动时必须通过所有 Boostrap检测，否则会启动失败
+  - [Bootstrap Checks](https://www.elastic.co/guide/en/elasticsearch/reference/master/bootstrap-checks.html) 可以分两类: JVM & Linux Checks, Linux Checks只针对Linux系统
+* JVM设定
+  - 从ES6开始，只支持64位的jvm，配置config / jvm.options
+  - 避免修改默认配置
+    - 将内存 Xms 和 Xmx 设置成一样，避免heap resize时引发停顿
+    - Xmx 设置不要超过物理内存的50%，单个节点上，最大内存建议不要超过32G
+    - 生产环境，JVM必须使用Server模式
+    - 关闭JVM Swapping
+* 集群的API设定
+  - 静态设置和动态设定
+    - 静态配置文件尽量简洁：按照文档设置所有相关系统参数。elasticsearch.yml配置文件中尽量只写必备参数
+  - 其它的设置项可以通过API动态进行设定，动态设定会覆盖elasticsearch.yaml中的设置
+    - Transient 在集群重启后会丢失
+    - Persistent 在集群重启后不会丢失
+  - 优先级: Transient Settings > Persistent Settings > Command-line settings > Congfig file settings
+* 最佳实践: 网络
+  - 单个集群不要跨数据中心进行部署(不要使用VAN)
+  - 节点之间的时延越少越好
+  - 如果有多块网卡，最好将 transport和http绑定到不同的网卡，并设置不同的防火墙Rules
+  - 按需为 Coordination Node 或 Ingest Node 配置负载均衡
+* 最佳实践: 内存
+  - 内存大小要根据Node需要存储的数据进行估算
+    - 搜索类的比例建议 1:16
+    - 日志类 1:48 ~ 1:96
+* 最佳实践: 存储
+  - 推荐使用SSD,使用本地存储(Local DIsk)，避免使用 SAN NFS / AWS / Azure filesystem
+  - 可以在本地指定多个"path.data", 以支持使用多块磁盘
+  - ES本身提供了很好的HA机制，无需使用RAID 1/5/10
+  - 可以在Warm节点上使用Spinnings Disk，但是需要关闭 Concurrent Merges(Index.merge.scheduler.max_thread_count:1)
+  - [Trim你的SSD](https://www.elastic.co/jp/blog/is-your-elasticsearch-trimmed)
+* 服务器硬件
+  - 建议使用中等配置的机器，不建议使用过于强劲的硬件配置, Medium machine over large machine
+  - 不建议在一台服务器上运行多个节点
+* 集群设置: Throttles限流
+  - 为 Relocation 和 Recovery设置限流，避免过多任务对集群产生性能影响
+  - Recovery: Cluster.routing.allocation.node_concurrent_recoveries: 2
+  - Relocation: Cluster.routing.allocation.cluster_concurrent_rebalance: 2
+* 集群设置: 关闭 Dynamic Indexes, 或者设置白名单
+* 集群安全设定
+  - 为 Elasticsearch 和 kibana 配置安全功能
+    - 打开 Authentication & Authorization
+    - 实现索引和字段级的安全控制
+  - 节点间通信加密
+  - Enable Https
+  - Audit logs
+
 ## 10.2 监控 Elasticsearch 集群
+* Elasticsearch Stats API
+  - Node Stats: _nodes/stats
+  - Cluster Stats: _cluster/stats
+  - Index Stats: index_name/_stats
+* Elasticsearch Task API
+  - Pending Cluster Tasks API: _cluster/pending_tasks
+  - Task Management API: _tasks(可以用了Cancel一个Task)
+* 监控Thread Pools
+  - _nodes/thread_pool
+  - _nodes/stats/thread_pool
+  - _cat/thread_pool?v
+  - _nodes/hot_threads
+* The Index & Query Slow Log
+  - 支持将分片上，Search 和 Fetch阶段的慢查询写入文件
+  - 支持为Query和Fetch分别定义阈值
+  - 索引级的动态设置，可以按需设置，或者通过 Index Template统一设定
+  - Slow log 文件通过log4j2.properties配置
+```
+{
+  "index.indexing.slowlog":{
+    "threshold.index":{
+      "warn":"10s",
+      "info": "4s",
+      "debug":"2s",
+      "trace":"0s"
+    },
+    "level":"trace",
+    "source":1000  
+  }
+}
+
+{
+  "settings": {
+    "index.search.slowlog.threshold": {
+      "query.warn": "10s",
+      "query.info": "3s",
+      "query.debug": "2s",
+      "query.trace": "0s",
+      "fetch.warn": "1s",
+      "fetch.info": "600ms",
+      "fetch.debug": "400ms",
+      "fetch.trace": "0s"
+    }
+  }
+}
+```
+* 如何创建监控Dashboard
+  - 开发Elasticsearch plugin, 通过读取相关的监控API，将数据发送到ES或者TSDB
+  - 使用 Metricbeats搜集相关指标
+  - 使用 Kibana或Graffna 创建Dashboard
+  - 可以开发Elasticsearch Expoter, 通过 Prometheus 监控 Elasticsearch 集群
+
 ## 10.3 诊断集群的潜在问题
+* [Support Diagnostics Tool](https://github.com/elastic/support-diagnostics)
+* 集群绿色，是否意味着足够好
+  - 绿色只是其中一项指标，显示分片是否都已正常分配
+  - 监控指标多并且分散，指标的含义不够明确直观
+  - 问题分析定位的门槛高，需要具备专业知识
+* eBay Diagnostic Tool
+  - 集群健康状态，是否有节点丢失
+  - 索引合理性
+    - 索引总数不能过大
+    - 副本分片尽量不要设置为0
+    - 主分片尺寸检测
+    - 索引的字段总数
+    - 索引是否分配不均衡
+    - 索引segment大小诊断分析
+  - 资源使用合理性
+    - CPU内存和磁盘的使用状况分析
+    - 是否存在节点负载不平衡
+    - 是否需要增加节点
+  - 业务操作合理性
+    - 集群状态变更频率，是否在业务高峰期有频繁操作
+    - 慢查询监控与分析
+* 阿里云 EYOU智能运维工具
+
 ## 10.4 解决集群 Yellow 与 Red 的问题
+* 集群健康度
+  - 分片健康
+    - 红: 至少有一个分片没有分配
+    - 黄: 至少有一个副本没有分配
+    - 绿: 主副分片全部正常分配
+  - 索引健康: 最差的分片状态
+  - 集群健康: 最差的索引状态
+```
+# 检查集群状态，查看是否有节点丢失，有多少分片无法分配
+GET /_cluster/health/
+
+# 查看索引级别,找到红色的索引
+GET /_cluster/health?level=indices
+
+#查看索引的分片
+GET _cluster/health?level=shards
+
+# Explain 变红的原因
+GET /_cluster/allocation/explain
+```
+
 ## 10.5 提升集群写性能
 ## 10.6 提升进群读性能
 ## 10.7 集群压力测试
