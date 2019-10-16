@@ -2334,10 +2334,183 @@ GET _cluster/health?level=shards
 # Explain 变红的原因
 GET /_cluster/allocation/explain
 ```
+* 分片没有被分配的一些原因
+  - INDEX_CREATE: 创建索引导致，在索引的全部分片分配完成之前，会有短暂的Red，不一定代表有问题
+  - CLUSTER_RECOVER: 集群重启阶段，会有这个问题
+  - INDEX_REOPEN: Open之前Close的索引
+  - DANGLING_INDEX_IMPORTED: 一个节点离开集群期间，有索引被删除，这个节点重新返回时，会导致Dangling的问题
+  - [文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/cat-shards.html)
+* 常见问题与解决方案
+  - 集群变红，需要检查是否有节点离线。如果有，通常通过重启离线的节点可以解决问题
+  - 由于配置导致的问题，需要修复相关的配置(例如错误的 box_type，错误的副本数)
+  - 因为磁盘空间限制，分片规则(Shard Filtering)引发的，需要调整规则或者增加节点
+  - 对于节点返回集群，导致的 dangling 变红，可直接删除 dangling 索引
+* 集群 Red & Yellow 问题的总结
+  - Red & Yellow 是集群运维中常见的问题
+  - 除了集群故障，一些创建，增加副本等操作， 都会导致集群短暂的 Red 和 Yellow，所以 监控和报警时需要设置一定的延时
+  - 通过检查节点数，使用 ES 提供的相关 API， 找到真正的原因
+  - 可以指定 Move 或者 Reallocate 分片
 
 ## 10.5 提升集群写性能
+* 提高写入性能的方法
+  - 写性能优化的目标:增大写吞吐量(Events Per Second)，越高越好
+  - 客户端:多线程，批量写
+    - 可以通过性能测试，确定最佳文档数量
+    - 多线程:需要观察是否有 HTTP 429 返回，实现 Retry 以及线程数量的自动调节
+  - 服务器端:单个性能问题，往往是多个因素造成的。需要先分解问题，在单个节点上进行调整并且结合测试，尽可能压榨硬件资源，以达到最高吞吐量
+    - 使用更好的硬件。观察 CPU / IO Block
+    - 线程切换 / 堆栈状况
+* 服务器端优化写入性能的一些手段
+  - 降低IO操作
+    - 使用 ES 自动生成的文档 Id / 一些相关的 ES 配置，如 Refresh Interval 
+  - 降低 CPU 和存储开销
+    - 减少不必要分词 / 避免不需要的 doc_values /文档的字段尽量保证相同的顺序，可以提高文档的压缩率 
+  - 尽可能做到写入和分片的均衡负载，实现水平扩展
+    - Shard Filtering / Write Load Balancer
+  - 调整 Bulk 线程池和队列
+  - ES 的默认设置，已经综合考虑了数据可靠性，搜索的实时性质，写入速度，一般不要盲目修改
+  - 一切优化，都要基于高质量的数据建模
+* 关闭无关的功能
+  - 只需要聚合不需要搜索， Index 设置成 false
+  - 不需要算分， Norms 设置成 false
+  - 不要对字符串使用默认的 dynamic mapping。字段 数量过多，会对性能产生比较大的影响
+  - idex_options 控制在创建倒排索引时，哪些内容 会被添加到倒排索引中。优化这些设置，一定程度 可以节约 CPU
+  - 关闭 _source，减少 IO 操作;(适合指标型数据)
+* 针对性能的取舍
+  - 如果需要追求极致的写入速度，可以牺牲数据可靠性及搜索实时性以换取性能
+    - 牺牲可靠性:将副本分片设置为 0，写入完毕再调整回去
+    - 牺牲搜索实时性:增加 Refresh Interval 的时间
+    - 牺牲可靠性:修改 Translog 的配置
+* 数据写入的过程
+  - Refresh: 将文档先保存在 Index buffer 中,以 refresh_interval 为间隔时间,定期清空 buffer，生成segment，借助文件系统缓存的特性，先将 segment 放在文件系统缓存中,并开放查询,以提升搜索的实时性
+  - Translog: Segment 没有写入磁盘，即便发生了当机，重启后，数据也能恢复，默认配置是每次请求都会落盘
+  - Flush: 删除旧的translog文件,生成 Segment 并写入磁盘 / 更新 commit point并写入磁盘。 ES自动完成,可优化点不多
+* Refresh Interval
+  - 降低 Refresh 的频率
+  - 增加 refresh_interval 的数值。默认为 1s ，如果设置成 -1 ，会禁止自动 refresh
+    - 避免过于频繁的 refresh，而生成过多的 segment 文件
+    - 但是会降低搜索的实时性
+  - 增大静态配置参数 indices.memory.index_buffer_size
+    - 默认是 10%, 会导致自动触发 refresh 
+* Translog
+  - 降低写磁盘的频率，但是会降低容灾能力
+    - Index.translog.durability:默认是 request，每个请求都落盘。设置成 async，异步写入
+    - Index.translog.sync_interval 设置为 60s，每分钟执行一次
+    - Index.translog.flush_threshod_size: 默认 512 mb，可以适当调大。 当 translog 超过该值，会触发 flush
+* 分片设定
+  - 副本在写入时设为 0，完成后再增加
+  - 合理设置主分片数，确保均匀分配在所有数据节点上
+    - Index.routing.allocation.total_share_per_node: 限定每个索引在每个节点上可分配的主分片数
+    - 5 个节点的集群。索引有5个主分片,1个副本，应该如何设置?
+      - 产环境中要适当调大这个数字，避免有节点下线时，分片无法正常迁移
+* Bulk，线程池和队列大小
+  - 客户端
+    - 单个 bulk 请求体的数据量不要太大，官方建议大约5-15mb
+    - 写入端的 bulk 请求超时需要足够长，建议60s 以上
+    - 写入端尽量将数据轮询打到不同节点。
+  - 服务器端
+    - 索引创建属于计算密集型任务，应该使用固定大小的线程池来配置。来不及处理的放入队列，线程数应该配置成 CPU 核心数 +1 ，避免过多的上下文切换
+    - 队列大小可以适当增加，不要过大，否则占用的内存会成为 GC 的负担
+
 ## 10.6 提升进群读性能
+* 尽量 Denormalize 数据
+  - Elasticsearch != 关系型数据库
+  - 尽可能 Denormalize 数据，从而获取最佳的性能
+    - 使用 Nested 类型的数据。查询速度会慢几倍
+    - 使用 Parent / Child 关系。查询速度会慢几百倍
+* 数据建模
+  - 尽量将数据先行计算,然后保存到Elasticsearch中.尽量避免查询时的Script计算
+  - 尽量使用 Filter Context, 利用缓存机制,减少不必要的算分
+  - 结合 profile，explain API 分析慢查询的问题，持续优化数据模型
+  - 严禁使用 * 开头通配符 Terms 查询
+* 优化分片
+  - 避免 Over Sharing: 一个查询需要访问每一个分片，分片过多，会导致不必要的查询开销
+  - 结合应用场景，控制单个分片的尺寸
+    - Search: 20GB
+    - Logging:40GB
+  - Force-merge Read-only 索引
+    - 使用基于时间序列的索引，将只读的索引进行force merge, 减少segment数量
+* 常见优化
+  - 避免查询时脚本
+    - 可以在 Index文档时，使用Ingest Pipeline，计算并写入某个字段
+  - 使用 Query Context
+  - 聚合文档消耗内存
+    - 聚合查询会消耗内存，特别是针对很大的数据集进行聚合运算, 如果可以控制聚合的数量，就能减少内存的开销
+    - 当需要使用不同的 Query Scope，可以使用 Filter Bucket
+  - 通配符开头的正则，性能非常糟糕，需避免使用 
+* 读性能优化
+  - 影响查询性能的一些因素
+    - 数据模型和索引配置是否优化
+    - 数据规模是否过大，通过 Filter 减少不必要的数据计算
+    - 查询语句是否优化
+
 ## 10.7 集群压力测试
+* 压力测试的目的
+  - 容量规划 / 性能优化 / 版本间性能比较 / 性能问题诊断
+  - 确定系统稳定性，考察系统功能极限和隐患
+* 压力测试的方法与步骤
+  - 测试计划(确定测试场景和测试数据集)
+  - 脚本开发
+  - 测试环境搭建(不同的软硬件配置) & 运行测试
+  - 分析比较结果
+* 测试目标
+  - 测试集群的读写性能 / 做集群容量规划
+  - 对 ES 配置参数进行修改，评估优化效果
+  - 修改 Mapping 和 Setting，对数据建模进行优化，并测试评估性能改进
+  - 测试 ES 新版本，结合实际场景和老版本进行比较，评估是否进行升级
+* 测试数据
+  - 数据量/数据分布
+* 测试脚本
+  - ES 本身提供了 REST API，所以，可以通过很多传统的性能测试工具
+    - Load Runner (商业软件，支持录制+重放 + DSL )
+    - JMeter ( Apache 开源 ，Record & Play)
+    - Gatling (开源，支持写 Scala 代码 + DSL)
+  - 专门为 Elasticsearch 设计的工具
+    - ES Pref & Elasticsearch-stress-test
+    - Elastic Rally
+* ES Rally 简介
+  - Elastic 官方开源，基于 Python 3 的压力测试工具
+    - https://github.com/elastic/rally
+    - 性能测试结果比较: https://elasticsearch-benchmarks.elastic.co
+  - 功能介绍
+    - 自动创建,配置,运行测试,并且销毁ES集群
+    - 支持不同的测试数据的比较,也支持将数据导入ES集群,进行二次分析
+    - 支持测试时指标数据的搜集，方便对测试结果进行深度的分析
+* Rally 的安装以及入门
+  - 安装运行
+    - Python3.4+和pip3 /JDK8 /git1.9+
+    - 运行 pip3 install esrally
+    - 运行 esrally configure
+  - 运行
+    - 运行 esrally –distribution-version=7.1.0
+    - 运行 1000 条测试数据: esrally –distribution-version=7.1.0 --test-mode
+* Rally 基本概念讲解
+  - Tournament – 定义测试目标，由多个 race 组成
+    - Esrally list races
+  - Track – 赛道:测试数据和测试场景与策略
+    - esrally list tracks 
+    - https://github.com/elastic/rally- tracks
+  - Car– 执行测试方案
+    - 不同配置的 es 实例
+  - Award – 测试结果和报告 
+* 什么是压测的流程
+  - Pipeline 指的是压测的一个流程
+    - Esrally list pipelines 
+  - 默认的流程
+    - From-source-complete
+    - From-source-skip-build
+    - From-distribution
+    - Benchmark-only (对已有的集群进行测试)
+* 自定义 & 分布式测试
+  - Car
+    - https://esrally.readthedocs.io/en/latest/car.html
+    - 使用自建的集群
+  - Track
+    - 自带的测试数据集:Nyc_taxis 4.5 G / logging 1.2G
+    - 更多的测试数据集: https://github.com/elastic/rally-tracks
+  - 分布式测试
+    - https://esrally.readthedocs.io/en/latest/recipes.html#recipe-distributed-load- driver 
+
 ## 10.8 段合并优化及注意事项
 ## 10.9 缓存及使用 Breaker 限制内存使用
 ## 10.10 一些运维的相关建议
