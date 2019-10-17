@@ -2975,19 +2975,6 @@ POST /nginx_logs_write/_rollover
 ## 14.6 用 Canvas 做数据演示
 
 # Elastic 认证
-# 监控
-* _cluster/health
-* yellow
-  * 所有的主分片已经分片了，但至少还有一个副本是缺失的。不会有数据丢失，所以搜索结果依然是完整的。不过，你的高可用性在某种程度上被弱化。如果 更多的 分片消失，你就会丢数据了。把 yellow 想象成一个需要及时调查的警告。
-* red
-  * 至少一个主分片（以及它的全部副本）都在缺失中。这意味着你在缺少数据：搜索只能返回部分数据，而分配到这个分片上的写入请求会返回一个异常。 
-* GET _cluster/health?level=indices
-* GET _nodes/stats
-* GET my_index/_stats
-* GET my_index,another_index/_stats 
-* GET _all/_stats 
-* ```GET /_cat/shards 查看所有分片状态```
-
 
 # config
 ```
