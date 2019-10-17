@@ -2512,8 +2512,237 @@ GET /_cluster/allocation/explain
     - https://esrally.readthedocs.io/en/latest/recipes.html#recipe-distributed-load- driver 
 
 ## 10.8 段合并优化及注意事项
-## 10.9 缓存及使用 Breaker 限制内存使用
+* Lucene Index 原理
+  - 在Lucene中,单个倒排索引文件被称为Segment。Segment是自包含的,不可变更的。多个Segments汇总在一起,称为Lucene的Index,其对应的就是ES中的Shard
+  - 当有新文档写入时,并且执行Refresh,就会生成一个新Segment。Lucene中有一个文件,用来记录所有Segments信息,叫做Commit Point。查询时会同时查询所有Segments并且对结果汇总
+  - 删除的文档信息,保存在“.del”文件中,查询后会进行过滤
+  - Segment会定期Merge,合并成一个,同时删除已删除文档
+* Merge 优化
+  - ES 和 Lucene 会自动进行Merge操作
+  - Merge 操作相对比较重,需要优化,降低对系统的影响
+  - 优化点一:降低分段产生的数量/频率
+    - 可以将 Refresh Interval调整到分钟级别 / indices.memory.index_buffer_size (默认是 10%)
+    - 尽量避免文档的更新操作
+  - 优化点二:降低最大分段大小,避免较大的分段继续参与 Merge,节省系统资源。(最终会有多个分段)
+    - Index.merge.policy.segments_per_tier,默认为10越小需要越多的合并操作
+    - Index.merge.policy.max_merged_segment,默认5GB,操作此大小以后,就不再参与后续的合并操作 
+* Force Merge
+  - 当Index不再有写入操作的时候,建议对其进行force merge
+    - 提升查询速度 / 减少内存开销 
+  - 最终分成几个segments比较合适?
+    - 越少越好,最好可以force merge 成1个,但是Force Merge会占用大量的网络,IO和CPU
+    - 如果不能在业务高峰期之前做完，就需要考虑增大最终的分段数
+    - Shard 的大小 / Index.merge.policy.max_merged_segment 的大小
+```
+POST geonames/_forcemerge?max_num_segments=1
+GET _cat/segments/geonames?v
+```
+
+## 10.9 缓存及使用Circuit Breaker 限制内存使用
+* Elasticsearch 的缓存主要分成三大类
+  - Node Query Cache (Filter Context)
+  - Shard Query Cache (Cache Query的结果)
+  - Fielddata Cache
+* Node Query Cache
+  - 每一个节点有一个Node Query缓存
+    - 由该节点的所有Shard共享,只缓存Filter Context相关内容
+    - Cache采用LRU算法
+  - 静态配置,需要设置在每个Data Node上
+    - Node Level - indices.queries.cache.size: ”10%”
+    - Index Level: index.queries.cache.enabled: true
+* Shard Request Cache
+  - 缓存每个分片上的查询结果
+    - 只会缓存设置了size=0的查询对应的结果。不会缓存hits。主要是缓存Aggregations和Suggestions结果 
+  - Cache Key
+    - LRU算法,将整个JSON查询串作为Key,与JSON对象的顺序相关 
+  - 静态配置
+    - 数据节点:indices.requests.cache.size: “1%” 
+* Fielddata Cache
+  - 除了Text类型,默认都采用doc_values。节约了内存
+    - Aggregation的Global ordinals也保存在Fielddata cache中
+  - Text类型的字段需要打开Fileddata才能对其进行聚合和排序
+    - Text经过分词,排序和聚合效果不佳,建议不要轻易使用 
+  - 配置
+    - 可以控制Indices.fielddata.cache.size,避免产生GC(默认无限制) 
+* 缓存失效
+  - Node Query Cache: 保存的是Segment及缓存命中的结果。Segment被合并后,缓存会失效
+  - Shard Request Cache: 分片Refresh时候,Shard Request Cache会失效。如果Shard对应的数据频繁发生变化,该缓存的效率会很差
+  - Fielddata Cache: Segment被合并后,会失效
+* 管理内存的重要性
+  - Elasticsearch 高效运维依赖于内存的合理分配
+  - 可用内存一半分配给 JVM，一半留给操作系统，缓存索引文件
+  - 内存问题，引发的问题
+    - 长时间 GC，影响节点，导致集群响应缓慢
+    - OOM， 导致丢节点
+* 诊断内存状况
+  ```
+  GET _cat/nodes?v
+  
+  GET _nodes/stats/indices?pretty
+  
+  GET _cat/nodes?v&h=name,queryCacheMemory,queryCacheEvictions,requestCacheMemory,requestCacheHitCount,request_cache.miss_count
+  
+  GET _cat/nodes?h=name,port,segments.memory,segments.index_writer_memory,fielddata.memory_size,query_cache.memory_size,request_cache.memory_size&v
+  ```
+* 建议
+  - 对于不在写入和更新的索引,可以将其设置成只读。同时进行force merge 操作。如果问题依然存在,则需要考虑扩容。此外,对索引进行force merge还可以减少对global_ordinals数据结构的构建,减少对 fielddata cache的开销
+  - Field data cache的构建比较重，Elasticsearch不会主动释放,所以这个值应该设置的保守一些。如果业务上确实有所需要,可以通过增加节点,扩容解决
+  - 在大量数据集上进行嵌套聚合查询,需要很大的堆内存来完成。如果业务场景确实需要。则需要增加硬件进行扩展。同时,为了避免这类查询影响整个集群,需要设置Circuit Breaker 和 search.max_buckets的数值
+* Circuit Breaker 包含多种断路器，避免不合理操作引发的OOM，每个断路器可以指定内存使用的限制
+  - Parent circuit breaker:设置所有的熔断器可以使用的内存的总量
+  - Fielddata circuit breaker:加载 fielddata 所需要的内存
+  - Request circuit breaker:防止每个请求级数据结构超过一定的内存(例如聚合计算的内存)
+  - In flight circuit breaker:Request中的断路器
+  - Accounting request circuit breaker:请求结束后不能释放的对象所占用的内存
+* Circuit Breaker 统计信息
+  - GET /_nodes/stats/breaker?
+    - Tripped > 0,说明有过熔断
+    - Limit size 与 estimated size约接近,越可能引发熔断
+  - 千万不要触发了熔断,就盲目调大参数,有可能会导致集群出问题,也不因该盲目调小,需要进行评估
+  - 建议将集群升级到7.x,更好的Circuit Breaker实现机制
+    - 增加了indices.breaker.total.use_real_memory配置项,可以更加精准的分析内存状况,避免OOM 
+* [官方博客](https://www.elastic.co/blog/improving-node-resiliency-with-the-real-memory-circuit-breaker)
+
 ## 10.10 一些运维的相关建议
+* 集群的生命周期管理
+  - 预上线
+    - 评估用户的需求及使用场景 / 数据建模 / 容量规划 / 选择合适的部署架构 / 性能测试 
+  - 上线
+    - 监控流量 / 定期检查潜在问题 (防患于未然，发现错误的使用方式，及时增加机器)
+    - 对索引进行优化(Index Lifecycle Management)，检测是否存在不均衡而导致有部分节点过热
+    - 定期数据备份 / 滚动升级
+  - 下架前监控流量，实现 Stage Decommission
+* 部署的建议
+  - 根据实际场景，选择合适的部署方式，选择合理的硬件配置
+    - 搜索类
+    - 日志/指标
+  - 部署要考虑，反亲和性(Anti-Affinity)
+    - 尽量将机器分散在不同的机架。例如，3 台 Master 节点必须分散在不同的机架上
+    - 善用 Shard Filtering 进行配置
+* 使用要遵循一定的规范
+  - Mapping
+    - 生产环境中索引应考虑禁止Dynamic Index Mapping，避免过多字段导致Cluster State占用过多
+    - 禁止索引自动创建的功能,创建时必须提供Mapping或通过Index Template进行设定
+  - 设置Slowlogs,发现一些性能不好,甚至是错误的使用Pattern
+    - 例如:错误的将网址映射成keyword,然后用通配符查询。应该使用Text，结合URL分词器
+    - 严禁一切 “*” 开头的通配符查询
+ * 对重要的数据进行备份
+   - 集群备份
+   - [snapshots](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/modules-snapshots.html)
+* 定期更新到新版本
+  - ES 在新版本中会持续对性能作出优化;提供更多的新功能
+  - 修复一些已知的 bug 和安全隐患
+  - Elasticsearch 可以使用上一个主版本的索引
+* Rolling Upgrade v.s Full Cluster Restart
+  - Rolling Upgrade
+    - 没有 Downtime
+    - [文档](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/rolling-upgrades.html)
+  - Full Cluster Restart
+    - 集群在更新期间不可用
+    - 升级更快
+* Full Restart 的步骤
+  - 停止索引数据，同时备份集群
+  - Disable Shard Allocation (Persistent)
+  - 执行 Synced Flush
+  - 关闭并更新所有节点
+  - 先运行所有 Master 节点 / 再运行其他节点
+  - 等集群变黄后打开 Shard Allocation
+* 运维建议
+  - 了解用户场景，选择合适部署
+  - 定期检查，发现潜在问题
+  - 对重要的数据进行备份
+  - 保持版本升级
+* 运维 Cheat Sheet:移动分片
+  - 从一个节点移动分片到另外一个节点
+  - 一个数据节点上有过多 Hot Shards,可以通过手动分配分片到特定的节点解决
+  ```
+  POST _cluster/reroute
+  {
+    "commands": [
+      {
+        "move": {
+          "index": "index_name",
+          "shard": 0,
+          "from_node": "node_name_1",
+          "to_node": "node_name_2"
+        }
+      }
+    ]
+  }
+  ```
+* 运维 Cheat Sheet :从集群中移除一个节点
+  - 使用场景:当你想移除一个节点，或者对一个机器进行维护。同时你又不希望导致集群的颜色变黄或者变红
+  ```
+  # remove the nodes from cluster 
+  PUT _cluster/settings
+  {
+    "transient": {
+      "cluster.routing.allocation.exclude._ip":"the_IP_of_your_node"
+    }
+  }
+  ```
+* 运维 Cheat Sheet :控制 Allocation 和 Recovery
+  - 使用场景:控制 Allocation 和 Recovery 的速率
+  ```
+  # change the number of moving shards to balance the cluster
+  PUT /_cluster/settings
+  {
+    "transient": {"cluster.routing.allocation.cluster_concurrent_rebalance":2}
+  }
+  
+  # change the number of shards being recovered simultanceously per node
+  PUT _cluster/settings
+  {
+    "transient": {"cluster.routing.allocation.node_concurrent_recoveries":5}
+  }
+  
+  # Change the recovery speed
+  PUT /_cluster/settings
+  {
+    "transient": {"indices.recovery.max_bytes_per_sec": "80mb"}
+  }
+  
+  # Change the number of concurrent streams for a recovery on a single node
+  PUT _cluster/settings
+  {
+    "transient": {"indices.recovery.concurrent_streams":6}
+  }
+  ```
+* 运维 Cheat Sheet :Synced Flush
+  - 使用场景:需要重启一个节点。
+  - 通过 synced flush，可以在索引上放置一个 sync ID。这样可以提供这些分片的 Recovery 的时间
+  ```
+  # Force a synced flush
+  POST _flush/synced
+  ```
+* 运维 Cheat Sheet :清空节点上的缓存
+  - 使用场景:节点上出现了高内存占用。可以执行清除缓存的操作。这个操作会影响集群的性能,但是会避免你的集群出现OOM的问题
+  ```
+  # Clear the cache on a node
+  POST _cache/clear
+  ```
+* 运维 Cheat Sheet :控制搜索的队列
+  - 使用场景:当搜索的响应时间过长，看到有“reject” 指标的增加，都可以适当增加该数值
+  ```
+  # Change the sinze of the search queue
+  PUT _cluster/settings
+  {
+    "transient": {
+      "threadpool.search.queue_size":2000
+    }
+  }
+  ```
+* 运维 Cheat Sheet :设置 Circuit Breaker
+  - 使用场景:设置各类 Circuit Breaker。避免 OOM 的发生
+  ```
+  #Adjust the circuit breakers
+  PUT _cluster/settings
+  {
+    "persistent": {
+      "indices.breaker.total.limit":"40%"
+    }
+  }
+  ```
 
 # 11.0 索引生命周期管理
 ## 11.1 使用 Shrink 与 Rollover API 有效管理时间序列索引
