@@ -107,7 +107,7 @@
 
 另外现在还有办卡送里程的活动, </br>
 可以获得17000里程 </br>
-[2019 ana card活动](https://www.ana.co.jp/ja/jp/amc/cpn/anacard2019/?cid=amc_mgm_01)
+[2019 ana card活动](https://www.ana.co.jp/ja/jp/amc/reference/anacard/cpn/)
 
 
 ## 积分网站
