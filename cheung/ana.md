@@ -10,7 +10,6 @@
 莘哥2018年末就飞了一趟南非，往返7000里程</br>
 单程飞行时间15h,</br>
 
-
 # 里程怎么用
 里程的作用大概有以下几种
 * 换机票
@@ -35,6 +34,11 @@
 促销的套路很多都是去程便宜返程贵，这时候就可以只定去程的打折lcc票返程用里程换，</br>
 比如这次鹿儿岛就是抢了3000日元的lcc票返程用里程整，省下来的钱可以花在吃喝上 </br>
 
+另外工作自由度比较高的同学可以看一下[トクたびマイル](https://www.ana.co.jp/ja/jp/amc/promo/wa_k/) </br>
+时间上会比较紧凑，但是能用很少的里程交换到很合适的机票 </br>
+一般会是一些冷门的地方或是淡季， </br>
+不过周末来一场说走就走的旅行， </br>
+去一个完全没去过的陌生地也是挺好的 </br>
 
 ## 里程兑换的机票
 里程兑换成其他物品的价值往往要远小于兑换机票,</br>
@@ -137,6 +141,16 @@ p.s. 2019年12月后line point无法换取メトロpoint了，所以没有刚需
 2019年底更新</br>
 一年大概通过ソラチカ换了9万里程，可惜明年无法继续了</br>
 
+## ANA TOKYU POINT ClubQ PASMO
+随着Line将在2020年取消メトロpoint的交换,</br>
+原先的通过ソラチカカード换里程的方法也不再能继续了</br>
+而代替原先ソラチカカード的是东急POINT ClubQ PASMO</br>
+卡的申请链接[在这](https://www.smbc-card.com/nyukai/affiliate/anatopclubq/index.jsp)</br>
+
+如何通过各种积分网站换里程参考下面的图
+![ana](../tmp/a1f7f7f4da19b06d929fbc05ba225459.png)
+
+
 ## 总结:撸里程的流畅
 (1)积分网站完成广告任务拿到站内积分 </br>
 主要是point income,注册太多管理起来麻烦, </br>
@@ -171,7 +185,7 @@ metro point交换的每月上限是20000 point </br>
 有合适的活动做一做就行。</br>
 
 # 推荐的一些商品
-## 雀巢咖啡定期便
+## 雀巢咖啡定期便(2018旧版)
 [点击查看详细](https://pointi.jp/contents/ad_intro_bonus/detail.php?c=%2F7qHprWcUVYxERri1twIQjEMthJJItRZorDuhjdfGT0%3D&s=lo1J6vX%2Bjm0%3D)</br>
 强烈推荐的活动，</br>
 第一次购买的物品第二次续订的才需要付费 </br>
@@ -198,6 +212,10 @@ metro point交换的每月上限是20000 point </br>
 
 这里可以申请咖啡机 </br>
 [点击查看详细](https://pointi.jp/contents/ad_intro_bonus/detail.php?c=%2F7qHprWcUVYxERri1twIQjEMthJJItRZorDuhjdfGT0%3D&s=nk5hD%2BuriHk%3D)
+
+## 雀巢咖啡定期便(2019年末)
+[雀巢薅羊毛攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/pint.md)
+
 
 ## 信用卡类
 不推荐办太多的信用卡，</br>
@@ -230,3 +248,5 @@ metro point交换的每月上限是20000 point </br>
 [东京购房攻略2⃣️](https://github.com/cheungYX/algorithm/blob/master/cheung/ff2.md) </br>
 [保险攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/hokken.md) </br>
 [职业规划篇](https://github.com/cheungYX/algorithm/blob/master/cheung/work_root.md) </br>
+[碳水循环减脂攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/wmf.md)</br>
+[aws初级构架师总结](https://github.com/cheungYX/algorithm/blob/master/cheung/aws.md)</br>
