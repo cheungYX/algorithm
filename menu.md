@@ -9,6 +9,8 @@
 [台湾垦丁游记](https://github.com/cheungYX/algorithm/blob/master/travel/kending_20190711.md) </br>
 [奄美大岛潜水](https://github.com/cheungYX/algorithm/blob/master/travel/amami_20190830.md)</br>
 [神津岛潜水](https://github.com/cheungYX/algorithm/blob/master/travel/kozu_20190920.md) </br>
+[夏威夷游记](https://github.com/cheungYX/algorithm/blob/master/travel/hawaii_20191010.md) </br>
+[冰岛游记](https://github.com/cheungYX/algorithm/blob/master/travel/iceland_20191227.md) </br>
 [ANA里程攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/ana.md) </br>
 [东京购房攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/ff.md) </br>
 [保险攻略](https://github.com/cheungYX/algorithm/blob/master/cheung/hokken.md) </br>
