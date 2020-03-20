@@ -1,7 +1,19 @@
+总体来说只要好好复习基本不难,
+时间比较紧迫,要分配好时间,
+多读文档,保证能迅速的找到需要的知识点,
+常用的几个命令记熟了，
+并没有太多的时间来犹豫，
+考试的时候是可以访问官方文档的,
+推荐把重要的知识点都分类保存到标签栏,
+纸上谈来终是浅,
+考过了也要多实践
+[kubernetes笔记](https://github.com/cheungYX/algorithm/blob/master/cheung/kubernetes.md)
+
 # 概要
 * [考试大纲](https://github.com/cncf/curriculum)
-* 24問 / 3時間
-* 300ドル
+* 题数:24問
+* 考试时间: 3小时
+* 价格:300刀
   - 打折 https://www.goodsearch.org/coupons/the-linux-foundation?open=53827629
 * 对于CKA考试，必须获得74％或以上的分数才能通过。
 * 比例
