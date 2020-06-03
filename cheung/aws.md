@@ -43,22 +43,6 @@ SNS/SQS、</br>
 * オペレーショナルエクセレンスを備えたアーキテクチャを定義する 6% 3問
 
 
-51%
-
-1.0 Designing highly available, cost-efficient, fault-tolerant, scalable systems: 48% </br>
-2.0 Implementation/Deployment: 83%</br>
-3.0 Data Security: 36%</br>
-4.0 Troubleshooting: 75%</br>
-
-
-% 56 => 72 </br>
-1.0 Design Resilient Architectures: 66% 9 => 77% </br>
-2.0 Define Performant Architectures: 57% 7 => 85$ </br>
-3.0 Specify Secure Applications and Architectures: 50% 6</br>
-4.0 Design Cost-Optimized Architectures: 0% 2 => 50%</br>
-5.0 Define Operationally-Excellent Architectures: 100% 1</br>
-
-
 * AWSアーキテクチャのベストプラクティス
 * 価格/コストを含むクライアント要件に応じた開発(オンデマンド/リザーブド/スポット,RTO,PRO DRデザイン)
 * アーキテクチャトレードオフの決定(高可用性とコストのトレードオフ)
